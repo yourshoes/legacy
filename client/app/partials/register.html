@@ -1,0 +1,20 @@
+<div id="signin" class="container" ng-controller="RegisterCtrl">
+	<div class="panel panel-default panel-signin">
+  		<div class="panel-body">
+		    <form name="registerForm" kz-submit="register()" novalidate>
+			    <h2 class="form-signin-heading">¡Crea una Cuenta!</h2>
+			   	<div ng-class="{'has-error': kz.registerForm.needsAttention(registerForm.email)}">
+			   		<input type="email" placeholder="Email" class="form-control" ng-model="email" name="email"  required/>
+			   	</div>
+			   	<div ng-class="{'has-error': kz.registerForm.needsAttention(registerForm.password)}">
+					<input type="password" placeholder="Contraseña" class="form-control" pattern=".{8,}" ng-model="password" name="password"  ng-minlength="8" required/>
+			   	</div>
+			    <div class="form-group">
+			    	<input type="text" placeholder="Nombre Usuario" class="form-control" ng-model="username" name="username" />
+				</div>
+			    <input type="submit" class="btn btn-lg btn-primary btn-block" value="Acceder"/>
+		  	</form>
+		  	<div ng-show="serverError" class="alert alert-danger"><p class="text-center"><strong>¡Esta cuenta ya existe! Pulsa <a ui-sref="recover">aquí</a> si olvidaste tu contraseña</strong></p></div>
+  		</div>
+	</div>
+</div>

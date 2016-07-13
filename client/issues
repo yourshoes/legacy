@@ -1,0 +1,20 @@
+* blockquote del navbar no desaparece cuando hacemos un resize para disminuir la pantalla
+
+<li access-level='anon' class="pull-right">
+<blockquote id="nav_quote">
+  <p>&#8220; Bendición, Fructificación y Expansión. &#8221;</p>
+  <small>Cofundadora <cite title="Source Title">María del Mar</cite></small>
+</blockquote>
+</li>
+
+se debe a la directiva collapse="navCollapsed", cuando la quitamos se soluciona pero claro entonces ya no es collapsable. El error por tanto esta en el plugin collapse de angular-ui-bootstrap, esperamos a ver si lo arreglan. Si no, añadir temporalmente como solucion esto en style.css:
+
+@media all and (max-width: 760px) 
+{
+  #nav_quote
+  {
+    display:none;
+    /*content: " (" attr(data-short) ")";*/
+  }
+}
+

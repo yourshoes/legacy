@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" ng-app="kalzate">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <title>Kalzate - TPV</title>
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="/static/css/style.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <script type="text/ng-template" id="searchAutocompleteTpl.html">
+  <table style="margin:0;border:0;padding:0;">
+    <tr style="height:26px;border:0;">
+      <td style="border:0;padding:0;">
+      <span class="color_circle" style="background-color:{{match.model.code}};" ></span>
+      <span ng-show="match.model.code2" class="color_circle" style="background-color:{{match.model.code2}};position:relative;left:-10px;margin:0;" ></span>
+      </td>
+      <td style="border:0;padding:0;text-align:center;" bind-html-unsafe="match.label | typeaheadHighlight:query" tabindex="-1"></td>
+    </tr>
+  </table> 
+  </script>
+  <script type="text/ng-template" id="ModalEditUser.html">
+  <div class="modal-content">
+    <form name="editUserForm" ng-submit="edit()" novalidate>
+      <div class="modal-header">
+        <h4 class="modal-title">Modifica tus datos</h4>
+      </div>
+      <div class="modal-body">
+        
+        <div class="text-center">
+              <label>Nuevo Nombre Emplead@</label>
+              <input type="text" placeholder="Nombre" class="form-control" ng-model="$parent.username" name="username" />
+              <label style="margin-top:10px;">Nueva Contraseña</label>
+              <input type="password" placeholder="Nueva Contraseña" class="form-control" ng-model="$parent.password" name="password" />
+              <p class="text-center" ng-show="error">
+                <strong>Se ha producido un error. Intentalo de nuevo por favor.</strong>
+              </p>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <input type="submit" class="btn btn-primary" value="Modificar datos">
+        <button type="button" class="btn btn-default" ng-click="cancel()">Cancelar</button>
+      </div>
+    </form>
+  </div><!-- /.modal-content -->
+</script>
+</head>
+<body>
+
+  <div id="wrap">
+    
+    <nav class="navbar navbar-inverse" role="navigation" ng-controller="NavCtrl">
+    <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" access-level="employee" ng-click="navCollapsed = !navCollapsed">
+          <span class="sr-only">Muestra Secciones</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" ui-sref="index"><img src="/static/img/kalzate_logo.png"/></a>
+      </div>
+
+      <div collapse="navCollapsed" class="collapse navbar-collapse navbar-responsive-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li class="active" access-level="employee" style="display:none;" active-nav>
+            <a ui-sref="index"><span class="glyphicon glyphicon-home"></span></a>
+          </li>
+          <li class="dropdown" access-level="employee" active-nav nav-section="/tickets" style="display:none;">
+            <a role="menuitem" tabindex="-1" ng-click="updateID()" ui-sref="tickets({ box: genID })">Ventas</a>
+            <!--
+            <a role="menuitem" tabindex="-1" ng-click="updateID()" ui-sref="tickets({ box: genID })">Ventas <b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu">
+              <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="updateID()" ui-sref="tickets({ box: genID })">Tickets</a></li>
+              <li role="presentation" class="divider"></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" ui-sref="box">Caja</a></li>
+            </ul>
+            -->
+          </li>
+          <li access-level="employee" active-nav nav-section="/shoes" style="display:none;">
+            <a ui-sref="shoes">Zapatos</span></a>
+          </li>
+          <!--
+          <li access-level='employee' active-nav>
+            <a ui-sref="complements">Complementos</span></a>
+          </li>
+        -->
+        <!--
+          <li access-level='employee' active-nav>
+            <a ui-sref="reports">Informes</span></a>
+          </li>
+          <li access-level='admin' active-nav>
+            <a ui-sref="options">Configuración</span></a>
+          </li>
+        -->
+          <li access-level="anon" class="pull-right" style="display:none;">
+            <blockquote id="nav_quote">
+              <p>&#8220; Bendición, Fructificación y Expansión. &#8221;</p>
+              <small>Cofundadora <cite title="Source Title">María del Mar</cite></small>
+            </blockquote>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
+    <div ui-view ng-cloak></div>
+
+  </div>
+
+  <div id="footer" ng-controller="FooterCtrl">
+
+    <div class="container">
+      <p class="text-center credit"><small>Boon Kalzate S.L. Copyright &copy; 2013 (Software desarrollado por </small><a href="http://scripturesos.com"><small>Zurisadai Pavón</small></a>)
+      </p>
+    </div>
+
+    <ul class="nav nav-pills pull-right" data-access-level="employee" style="display:none;">
+      <li class="dropup">
+        <a class="dropdown-toggle" href="#">
+          <span class="glyphicon glyphicon-signal"></span>
+        </a>
+        <ul class="dropdown-menu pull-right">
+          <li>
+            <a data-ng-click="shutdown()">
+              <span class="glyphicon glyphicon-off"></span> Apagar
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#"><span class="glyphicon glyphicon-comment"></span></a></li>
+      <li class="dropup">
+        <a class="dropdown-toggle" href="#">
+          <span class="glyphicon glyphicon-user"></span>
+        </a>
+        <ul class="dropdown-menu pull-right">
+          <li>
+            <a ng-click="openEdit()">
+              <span class="glyphicon glyphicon-user"></span> Editar
+            </a>
+          </li>
+          <li>
+            <a ng-href="/api/backup" download="backup.zip" target="_self">
+              <span class="glyphicon glyphicon-save"></span> Copia Seguridad
+            </a>
+          </li>
+          <li role="presentation" class="divider"></li>
+          <li>
+            <a data-ng-click="logout()">
+              <span class="glyphicon glyphicon-log-out"></span> Salir ({{ user.username }})
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+  </div>
+
+  <applet id="qz" name="QZ Print Plugin" code="qz.PrintApplet.class" width="5" height="5" style="position:absolute;left:-20px;">
+    <param name="jnlp_href" value="/static/qz-print_jnlp.jnlp">
+    <param name="cache_option" value="plugin">
+  </applet>
+
+  <!-- In production use:
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+  <script src="lib/underscore/underscore-min.js"></script>
+  <script src="lib/jquery/jquery.js"></script>
+  <script src="lib/bootstrap/bootstrap.min.js"></script>
+
+
+  <script src="lib/angular/ui-bootstrap-tpls-0.6.0.min.js"></script>
+
+  -->
+  <script src="/static/lib/angular/angular.js"></script>
+  <script src="/static/lib/angular/angular-cookies.js"></script>
+  <script src="/static/lib/angular/angular-ui-router.min.js"></script>
+  
+  <script src="/static/lib/angular/ui-bootstrap-tpls-0.6.0-dev.js"></script>
+  <!--
+  <script src="//localhost:3000/static/lib/angular/ui-bootstrap-tpls-0.6.0-SNAPSHOT.min.js"></script>
+  -->
+  
+  <!-- If we want local templates, add this, otherwise do not add templates.js and they will be requested to server 
+  
+    To get only the templates.js file, run: grunt ngtemplates
+
+    To get the production-ready kalzate.min.js, run grunt
+
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/services.js"></script>
+    <script src="/static/js/controllers.js"></script>
+    <script src="/static/js/filters.js"></script>
+    <script src="/static/js/directives.js"></script>
+    <script src="/static/js/templates.js"></script>
+  
+-->
+
+<script src="/static/dist/kalzate-client.min.js"></script>
+
+
+  
+  
+</body>
+</html>

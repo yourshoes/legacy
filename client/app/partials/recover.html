@@ -1,0 +1,19 @@
+<div id="signin" class="container">
+	<div class="panel panel-default panel-signin">
+  		<div class="panel-body">
+		    <form name="recoverForm" kz-submit="recover()" novalidate>
+			    <h2 class="form-signin-heading">¡Recupera tu Contraseña!</h2>
+			   	<div style="margin:10px auto;" ng-class="{'has-error': kz.recoverForm.needsAttention(recoverForm.email)}">
+			   		<input type="email" placeholder="Email" class="form-control" ng-model="email" name="email" required/>
+			   	</div>
+			    <input type="submit" class="btn btn-lg btn-primary btn-block" value="Enviar Contraseña"/>
+		  	</form>
+		  	<div ng-show="serverNotice.visible" class="alert alert-danger" ng-switch="serverNotice.code">
+		  		<p class="text-center" ng-switch-when="0">
+		  			<strong>¡Hemos enviado una nueva contraseña a su correo electrónico! Pulsa <a ui-sref="login">aquí</a> para ingresar al sistema</strong>
+		  		</p>
+		  		<p class="text-center" ng-switch-when="1"><strong>¡Esta cuenta no existe!</strong></p>
+		  	</div>
+  		</div>
+	</div>
+</div>

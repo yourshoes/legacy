@@ -1,0 +1,11 @@
+1) Display two colors shoes in the partials shoes.html line 185. It is necesarry to store more than one color on db
+2) Make more flexible the import shoes option, now it requires to have the firs line with the key values in english(i.e. reference, brand, ...) and in lower-case in order to work, so it must be changed to used it case-insesitive and in spanish also
+* 3)more than one box
+* 4)cheque vales emissions
+* 5)box summary printing
+	5.1) Error Problemas con rangos de fecha
+	5.2) Error tickets devueltos
+* 6)chaenge server time(una hora mas)
+* 7)Rapidez al ingresar campos en formulario de login
+* 8) Adding shoes with different color
+

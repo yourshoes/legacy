@@ -1,0 +1,222 @@
+<div class="container">
+  <div class="panel panel-default panel-custom">
+    <div class="panel-heading clearfix">
+        <h3 class="panel-title pull-left" >Stock de Zapatos</h3>
+        <div class="btn-group pull-right">
+            <a ui-sref="newShoe" class="btn btn-default">Añadir Nuevo</a>
+            <a ui-sref="shoes.onemore" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></a>
+        </div>
+    </div>
+    <div class="panel-heading clearfix">
+      <div class="pull-left">
+        <div class="input-group input-group-sm pull-left">
+           <span class="input-group-addon">Mostrar</span>
+           <select class="form-control" data-ng-model="pagination.itemsPerPage" ng-options="v for v in [10,20,40,80]" data-ng-click="pagination.setItemsPerPage()" data-ng-disabled="pagination.totalItems < 1" style="width:70px;">
+          </select>
+        </div>
+        <div class="btn-group pull-left">
+            <script type="text/ng-template" id="ModalImportShoes.html">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" ng-click="cancel()">&times;</button>
+                      <h4 class="modal-title">Importar Zapatos</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div data-file-dropzone="['text/csv', 'text/plain']" data-max-file-size="3" data-on-file-change="newFile(file)" data-file-input="true" data-upload-file-text="Arrastra tus ficheros CSV aquí &hellip;" data-file-error="fileError" data-file-loading="progress" data-read-file-as="text" style="margin-top:20px">
+                      </div>
+                       <div ng-switch="fileError.code" ng-show="fileError.visible" class="alert alert-danger" style="margin-top:10px;">
+                        <p ng-switch-when="1" class="text-center">El fichero supera los 3 MBytes</p>
+                        <p ng-switch-when="2" class="text-center">¡Selecciona un fichero CSV!</p>
+                        <p ng-switch-when="3" class="text-center">¡Algunos datos estan duplicados o estan mal formateados!</p>
+                        <p ng-switch-default class="text-center">{{fileError.msg}}</p>
+                      </div>
+                      <div ng-show="progress" class="progress progress-striped active">
+                        <div class="progress-bar" style="width: 100%">
+                        </div>
+                      </div>
+                      <div ng-show="files.length > 0" style="margin-top:20px;">
+                        <div class="input-group" style="width:350px;margin:auto;">
+                          <span class="input-group-addon">
+                            <input type="checkbox" ng-model="$parent.remove" >
+                          </span>
+                          <p class="form-control text-center">Borrar todos los zapatos antiguos</p>
+                        </div>
+                      </div>
+                      <div ng-show="displayCSV" style="margin-top:20px;">
+                        <tabset>
+                          <tab ng-repeat="file in files" active="tab.active" disabled="tab.disabled">
+                            <tab-heading>{{file.name}}<span class="close" style="margin-left:15px;" ng-click="closeTab($index)">&times;</span></tab-heading>
+                            <div json-table="{{$index}}" json-table-data="$parent.files" json-table-loaded="$parent.progress" json-table-active="$parent.displayCSV" style="overflow:auto;height:220px;"></div>
+                          </tab>
+                        </tabset>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" ng-click="cancel()">Cancelar</button>
+                      <button type="button" class="btn btn-info" ng-show="files.length > 0 && !displayCSV" ng-click="display()">Ver</button>
+                      <button type="button" class="btn btn-primary" ng-show="files.length > 0" ng-click="ok()">Importar Zapatos</button>
+                    </div>
+                  </div><!-- /.modal-content -->
+            </script>
+            <script type="text/ng-template" id="ModalQRShoes.html">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Código QR</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p ng-show="progress" class="text-center">Espere por favor &hellip;</p>
+                      <div ng-show="progress" class="progress progress-striped active">  
+                        <div class="progress-bar" style="width: 100%"></div>
+                      </div>
+                      <p ng-show="!progress && !error">Ahora puedes imprimir o copiar su código QR y comenzar a leerlo con su lector QR preferido</p>
+                      <div ng-show="error" class="alert alert-danger" style="margin-top:10px;">
+                        <p class="text-center">Ha ocurrido un error mientras obteníamos el código QR. ¡Ya hemos avisado a Zuri!</p>
+                      </div>
+                      <div class="text-center"><img ng-show="!progress && !error" src="{{qr}}"/></div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-info" ng-show="!progress && !error" ng-click="print()">Imprimir</button>
+                      <button type="button" class="btn btn-info" ng-show="!progress" ng-click="ok()">Salir</button>
+                    </div>
+                  </div><!-- /.modal-content -->
+            </script>
+            <script type="text/ng-template" id="ModalBCShoes.html">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Código de Barras</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p ng-show="progress" class="text-center">Espere por favor &hellip;</p>
+                      <div ng-show="progress" class="progress progress-striped active">  
+                        <div class="progress-bar" style="width: 100%"></div>
+                      </div>
+                      <p ng-show="!progress && !error" style="margin-bottom:30px;">Ahora puedes imprimir o copiar el código de barras que se muestra a continuación. Nota: El código de barras sigue el modelo <stron>Code 128</strong>.</p>
+                      <div ng-show="error" class="alert alert-danger" style="margin-top:10px;">
+                        <p class="text-center">Ha ocurrido un error mientras obteníamos el código de barras. ¡Ya hemos avisado a Zuri!</p>
+                      </div>
+                      <div class="text-center">
+                        <img img-load="barcode" img-load-error="onError(index)" img-load-success="progress = false" ng-show="!progress && !error" />
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-info" ng-show="!progress && !error" ng-click="print()">Imprimir</button>
+                      <button type="button" class="btn btn-info" ng-show="!progress" ng-click="ok()">Salir</button>
+                    </div>
+                  </div><!-- /.modal-content -->
+            </script>
+            <script type="text/ng-template" id="ModalPrintShoes.html">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Impresión Códigos de Barras</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p ng-show="progress" class="text-center">Espere por favor &hellip;</p>
+                      <div ng-show="progress" class="progress progress-striped active">  
+                        <div class="progress-bar" style="width: 100%"></div>
+                      </div>
+                      <p ng-show="!progress && !error" style="margin-bottom:30px;">Ya puedes descargar una copia con todos los códigos de barra de tus zapatos e imprimirla. Nota: El documento generado está en formato pdf, con estilo de página A4.</p>
+                      <div ng-show="error" class="alert alert-danger" style="margin-top:10px;">
+                        <p class="text-center">Ha ocurrido un error mientras obteníamos el código de barras. ¡Ya hemos avisado a Zuri!</p>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <a class="btn btn-info" ng-show="!progress && !error" ng-href="{{pdf}}" download="zapatos_barcodes.pdf" target="_self">Descargar</a>
+                      <button type="button" class="btn btn-info" ng-show="!progress" ng-click="ok()">Salir</button>
+                    </div>
+                  </div><!-- /.modal-content -->
+            </script>
+            <div class="btn-group">
+              <a class="btn btn-default btn-sm" ng-click="openPrint()" data-ng-disabled="pagination.totalItems < 1">
+                <span class="glyphicon glyphicon-print"></span>
+              </a>
+              <button type="button" class="btn btn-default btn-sm" ng-click="openImport()">Importar</button>
+              <a data-ng-disabled="pagination.totalItems < 1" class="btn btn-default btn-sm" ng-href="/api/shoes/export/csv" download="zapatos.csv" target="_self">Exportar</a>
+              <!--<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-ng-disabled="pagination.totalItems < 1">Exportar
+              </button>
+              <ul class="dropdown-menu">
+                <li><a ng-href="/api/shoes/export/pdf" download="zapatos.pdf" target="_self"><small>Formato PDF</small></a></li>
+                <li><a ng-href="/api/shoes/export/csv" download="zapatos.csv" target="_self"><small>Formato CSV</small></a></li>
+
+
+                <li><a ng-click="downloadCSV()"><small>Formato CSV</small></a></li>
+    
+
+              </ul>
+              -->
+          </div>
+        </div>
+      </div>
+      <div class="pull-right">
+        <div class="input-group input-group-sm">
+          <input type="text" class="form-control" ng-model="query.reference" typeahead="item for item in references | filter:$viewValue | limitTo:10" autocomplete="off" placeholder="Buscar" data-ng-disabled="pagination.totalItems < 1 && !searching" typeahead-on-select="pagination.search()" data-ng-change="updateSearch('reference')"/>
+          <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="button" data-ng-disabled="!searching" data-ng-click="delSearch()">
+              <span class="glyphicon glyphicon-trash"></span>
+            </button>
+            <a class="btn btn-default btn-sm" type="button" data-ng-disabled="pagination.totalItems < 1 && !searching" ui-sref="shoes.search">
+              <span class="glyphicon glyphicon-zoom-in"></span>
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div ui-view>
+    </div>
+    <div class="panel-body">
+       <div class="table-responsive" data-ng-show="pagination.totalItems > 0 && !progress">
+        <table class="table text-center">
+          <thead>
+            <tr>
+              <th>Referencia <a ng-click="orderShoes('reference')"><span ng-show="caret['reference']" class="caret"></span></a><div class="dropup" ng-show="!caret['reference']" ng-click="orderShoes('reference')"><span class="caret"></span></div></th>
+              <th>Marca <a ng-click="orderShoes('brand')"><span ng-show="caret['brand']" class="caret"></span></a><div class="dropup" ng-show="!caret['brand']" ng-click="orderShoes('brand')"><span class="caret"></span></div></th>
+              <th>Categoría <a ng-click="orderShoes('category')"><span ng-show="caret['category']" class="caret"></span></a><div class="dropup" ng-show="!caret['category']" ng-click="orderShoes('category')"><span class="caret"></span></div></th>
+              <th>Color <a ng-click="orderShoes('color')"><span ng-show="caret['color']" class="caret"></span></a><div class="dropup" ng-show="!caret['color']" ng-click="orderShoes('color')"><span class="caret"></span></div></th>
+              <th>Talla <a ng-click="orderShoes('size')"><span ng-show="caret['size']" class="caret"></span></a><div class="dropup" ng-show="!caret['size']" ng-click="orderShoes('size')"><span class="caret"></span></div></th>
+              <th>Precio <a ng-click="orderShoes('price')"><span ng-show="caret['price']" class="caret"></span></a><div class="dropup" ng-show="!caret['price']" ng-click="orderShoes('price')"><span class="caret"></span></div></th>
+              <th>Cantidad <a ng-click="orderShoes('quantity')"><span ng-show="caret['quantity']" class="caret"></span></a><div class="dropup" ng-show="!caret['quantity']" ng-click="orderShoes('quantity')"><span class="caret"></span></div></th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+           <tr data-ng-repeat="item in items" data-ng-class="{active: ($index%2)==0}">
+              <td>{{item.reference}}</td>
+              <td>{{item.brand}}</td>
+              <td>{{item.category}}</td>
+              <td><span class="color_circle" style="background-color:{{getColorCode(item.color)}};"></span> {{item.color}}</td>
+              <td>{{item.size}}</td>
+              <td>{{item.price}} &euro;</td>
+              <td>{{item.quantity}} <span ng-pluralize count="item.quantity"  when="{'1': 'ud.','other': 'uds.'}"></span></td>
+              <td>
+                <a class="btn btn-success btn-sm" data-ng-click="editShoe(item['_id'])" title="Ver Detalle"><span class="glyphicon glyphicon-edit"></span></a>
+                <a class="btn btn-danger btn-sm" data-ng-click="removeShoe(item['_id'])" title="Borrar"><span class="glyphicon glyphicon-remove"></span></a>
+                <a class="btn btn-sm" ng-class="{'btn-info':item['has_qr'],'btn-warning':!item['has_qr']}" data-ng-click="qrCode(item['_id'], item['has_qr'], $index)" title="Código QR"><span class="glyphicon glyphicon-qrcode"></span></a>
+                <a class="btn btn-primary btn-sm" data-ng-click="barCode(item['barcode'])" title="Código de Barras"><span class="glyphicon glyphicon-barcode"></span></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div data-ng-show="pagination.totalItems < 1 && !searching && !progress" class="alert alert-warning" style="margin:50px">
+        <p class="text-center">Vaya tela, tienes una tienda en la que ... <strong>!No hay ningún zapato!</strong></p><p class="text-center">Deberías incluir alguno. Si quieres, también puedes importarlos desde un fichero CSV.</p>
+      </div>
+      <div data-ng-show="pagination.totalItems < 1 && searching" class="alert alert-warning" style="margin:50px">
+        <p class="text-center"><strong>!No hay ningún zapato con los criterios de búsqueda dados!</strong></p>
+      </div>
+      <div ng-show="progress" style="width:300px;margin:20px auto;" >
+        <div class="progress progress-striped active">
+            <div class="progress-bar" style="width: 100%">
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer" data-ng-show="pagination.numPages > 1 && !progress">
+      <div class="text-center">
+        <pagination boundary-links="true" total-items="pagination.totalItems" max-size="pagination.maxSize" items-per-page="pagination.itemsPerPage" page="pagination.currentPage" class="pagination-sm" num-pages="pagination.numPages" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" on-select-page="pagination.setPage(page)"></pagination>
+      </div>
+      <small class="pull-left" ng-show="pagination.itemsPerPage*pagination.currentPage>pagination.totalItems">Mostrados {{pagination.itemsPerPage*(pagination.currentPage-1)}} al {{pagination.totalItems}} ({{pagination.totalItems}} resultados en {{pagination.numPages}} páginas)</small>
+      <small class="pull-left" ng-show="pagination.itemsPerPage*pagination.currentPage<=pagination.totalItems">Mostrados {{pagination.itemsPerPage*(pagination.currentPage-1)}} al {{pagination.itemsPerPage*pagination.currentPage}} ({{pagination.totalItems}} resultados en {{pagination.numPages}} páginas)</small>
+    </div>
+    <div class="panel-footer" data-ng-show="pagination.numPages <= 1">
+    </div>
+  </div>
+</div>

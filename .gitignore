@@ -1,0 +1,6 @@
+server/node_modules
+server/dump
+client/node_modules
+client/app/barcodes
+client/app/uploaded
+client/app/db_backup

@@ -1,0 +1,557 @@
+<script type="text/ng-template" id="ModalPrintTicket.html">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">¡Ya está hecho!</h4>
+    </div>
+    <div class="modal-body">
+      
+      <div class="text-center">
+        <p>A continuación se muestra el ticket de compra.</p><p> Si deseas, puedes modificarlo antes de imprimirlo</p>
+        <textarea class="form-control" ng-model="ticket" rows="12" wrap="off" style="white-space:pre;word-wrap:normal;font-family:monospace;width:385px;margin:auto;"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" ng-click="print()">Imprimir Ticket</button>
+      <button type="button" class="btn btn-default" ng-click="ok()">Salir</button>
+    </div>
+  </div><!-- /.modal-content -->
+</script>
+<div class="container">
+
+  <div class="row" ng-show="processingTicket">
+    <div class="col-xs-12 col-md-12">
+      <div class="progress progress-striped active">
+        <div class="progress-bar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" data-ng-show="ticketNotice.visible && !progress" data-ng-switch="ticketNotice.code">
+    <div class="col-xs-12 col-md-12" ng-switch-when="1">
+      <div class="alert alert-danger">
+        <p class="text-center">Venta Realizada con problemas</p>
+      </div>
+    </div>
+    <div class="col-xs-12 col-md-12" ng-switch-when="2">
+      <div class="alert alert-success">
+        <p class="text-center"><strong>¡ La venta se ha realizado con éxito !</strong></p>
+      </div>
+    </div>
+    <div class="col-xs-12 col-md-12" ng-switch-when="3">
+      <div class="alert alert-danger">
+        <p class="text-center">¡Hemos tenido problemas con la conexión. Inténtalo de nuevo!</p>
+      </div>
+    </div>
+    <div class="col-xs-12 col-md-12" ng-switch-when="4">
+      <div class="alert alert-success">
+        <p class="text-center"><strong>¡ La reserva se ha realizado con éxito !</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div ng-show="progress" style="width:300px;margin:auto;height:50px;position:absolute;top:50%;left:50%;margin-top:-25px;margin-left:-150px;" >
+    <p class="text-center">Cargando, espere por favor &hellip;</p>
+    <div class="progress progress-striped active">
+        <div class="progress-bar" style="width: 100%">
+        </div>
+    </div>
+  </div>
+
+  <div class="row" ng-show="!progress">
+    <div class="col-xs-12 col-md-9"> 
+      <div ui-view></div>
+        <div class="panel panel-default panel-custom" data-ng-show="!oldTicketActived">
+          <div class="panel-heading clearfix">
+            <h3 class="panel-title pull-left" >Venta de Stock</h3>
+            <div class="btn-group pull-right">
+              <button class="btn btn-default" data-ng-disabled="ticketTotal == 0" data-ng-click="newTicket()">Nuevo Ticket</button> 
+              <button class="btn btn-default" data-ng-click="finishTicket('save',true)" data-ng-disabled="ticketTotal == 0 || processingTicket">Reservar</button>
+              <button class="btn btn-default" data-ng-click="finishTicket('order',true)" data-ng-disabled="(ticketPM != 'credit' && !hasPaid()) || ticketTotal == 0 || processingTicket">Terminar</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive" data-ng-show="products.length > 0">
+              <table class="table text-center">
+                <thead>
+                  <tr>
+                    <th>Referencia</th>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                    <th>PVP</th>
+                    <th>Dto.</th>
+                    <th>Subtotal</th>
+                    <th>Quitar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-ng-repeat="item in products" data-ng-class="{active: ($index%2)==0}">
+                    <td>{{item.reference}}</td>
+                    <td>{{item.description}}</td>
+                    <td><span class="glyphicon glyphicon-chevron-left pointer" ng-show="item.quantity > 1 && !changingQty" ng-click="decQty($index,item.type == 's')"></span> {{item.quantity}} <span class="glyphicon glyphicon-chevron-right pointer" ng-show="(item.shoe_qty > 0 && !changingQty) || item.type == 'c'" ng-click="incQty($index,item.type == 's')"></span></td>
+                    <td>{{item.price}}</td>
+                    <td><input type="text" ng-model="item.discount" class="inline-editing-inactive" data-ng-change="applySubRate($index)"/></td>
+                    <td>{{item.subtotal}}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="removeFromTicket($index,item.type == 's')"><span class="glyphicon glyphicon-remove"></span></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div data-ng-show="products.length == 0" class="alert alert-warning" style="margin:50px">
+              <p class="text-center">Este ticket está vacío. No has añadido ningún producto aún.</p><p class="text-center">Puedes buscar los zapatos o complementos en el panel inferior</p>
+            </div>
+          </div>
+          <div class="panel-footer clearfix">
+            <div class="pull-left">
+              <div class="input-group input-group-sm pull-left">
+                <span class="input-group-addon">Impuesto (%)</span>
+                <input type="number" class="form-control" min="0" max="21" ng-model="ticketTax" step="1" style="width:70px;" data-ng-disabled="ticketTotal == 0" data-ng-change="applyRate(true)"/>
+              </div>
+              <div class="input-group input-group-sm pull-left">
+                <span class="input-group-addon">Descuento (%)</span>
+                <input type="number" class="form-control" min="0" ng-model="ticketDiscount" step="1" style="width:70px;" data-ng-disabled="ticketTotal == 0" data-ng-change="applyRate(false)"/>
+              </div>
+            </div>
+            <div class="btn-group pull-right"> 
+              <button type="button" data-ng-disabled="(ticketPM != 'credit' && !hasPaid()) || ticketTotal == 0 || processingTicket" data-ng-click="finishTicket('order',false)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-shopping-cart"></span> Deprisa</button> 
+            </div>
+          </div>
+      </div>
+      <div>
+        <tabset id="tickets-tab">
+          <tab>
+            <tab-heading>Zapatos<span class="glyphicon glyphicon-refresh" style="margin-left:15px;cursor:pointer;" ng-click="shoes.pagination.search()"></span>
+            </tab-heading>
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table text-center searchable">
+                    <tbody>
+                     <tr>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="shoes.barcode" placeholder="Código Barras" data-ng-change="shoes.pagination.search()"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="shoes.reference" typeahead="item for item in shoes.references | filter:$viewValue | limitTo:6" autocomplete="off" placeholder="Referencia" typeahead-on-select="shoes.pagination.search()" data-ng-change="shoes.pagination.search()" typeahead-position="shoes.thPosition"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="shoes.brand" typeahead="item for item in shoes.brands | filter:$viewValue | limitTo:6" autocomplete="off" placeholder="Marca" typeahead-on-select="shoes.pagination.search()" data-ng-change="shoes.pagination.search()" typeahead-position="shoes.thPosition"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                           <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="shoes.color" typeahead="item as item.color for item in colors | filter:$viewValue | limitTo:6" autocomplete="off" typeahead-template-url="searchAutocompleteTpl.html" placeholder="Color" data-ng-change="shoes.pagination.search()" typeahead-on-select="shoes.pagination.search()" typeahead-position="shoes.thPosition"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                           <div class="input-group-sm">
+                            <input type="number" class="form-control" ng-model="shoes.size"  data-ng-change="shoes.pagination.search()" placeholder="Talla" min="18" max="45" style="width:65px;"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                           <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="shoes.category" typeahead="item for item in ['HOMBRES','MUJERES','NIÑOS'] | filter:$viewValue " autocomplete="off" placeholder="Categoría" data-ng-change="shoes.pagination.search()" typeahead-on-select="shoes.pagination.search()" typeahead-position="shoes.thPosition" />
+                          </div>
+                        </td>
+                        <td class="active">
+                          <button class="btn btn-default btn-sm" type="button" data-ng-click="shoes.reset()">
+                            <span class="glyphicon glyphicon-trash"></span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-responsive" data-ng-show="shoes.pagination.totalItems > 0">
+                  <table class="table text-center">
+                    <thead>
+                      <tr>
+                        <th>Referencia</th>
+                        <th>Marca</th>
+                        <th>Categoría</th>
+                        <th>Color</th>
+                        <th>Talla</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                     <tr data-ng-repeat="item in shoes.items" data-ng-class="{active: ($index%2)==0}">
+                      <td>{{item.reference}}</td>
+                      <td>{{item.brand}}</td>
+                      <td>{{item.category}}</td>
+                      <td><span class="color_circle" style="background-color:{{getColorCode(item.color)}};"></span> {{item.color}}</td>
+                      <td>{{item.size}}</td>
+                      <td>{{item.price}} &euro;</td>
+                      <td>{{item.quantity}} <span ng-pluralize count="item.quantity"  when="{'1': 'ud.','other': 'uds.'}"></span></td>
+                      <td><button type="button" class="btn btn-primary btn-sm" data-ng-disabled="item.quantity == 0" data-ng-click="addToTicket(true,$index)">Añadir</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center" data-ng-show="shoes.pagination.pages > 1">
+                  <pagination boundary-links="true" total-items="shoes.pagination.totalItems" max-size="shoes.pagination.maxSize" items-per-page="shoes.pagination.itemsPerPage" page="shoes.pagination.currentPage" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" on-select-page="shoes.pagination.setPage(page)" num-pages="shoes.pagination.pages"></pagination>
+                </div>
+              </div>
+            </div>
+          </tab>
+          <tab heading="Complementos">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <form kz-submit="addToTicket(false)" name="ticketsComplementsForm" novalidate>
+                    <table class="table text-center searchable">
+                      <tbody>
+                       <tr>
+                          <td class="active">
+                            <div class="input-group-sm" ng-class="{'has-error': kz.ticketsComplementsForm.needsAttention(ticketsComplementsForm.creference)}">
+                              <input type="text" class="form-control" ng-model="complements.reference" typeahead="item for item in complements.references | filter:$viewValue | limitTo:6" autocomplete="off" placeholder="Referencia" typeahead-position="shoes.thPosition" name="creference" required/>
+                            </div>
+                          </td>
+                          <td class="active">
+                            <div class="input-group-sm">
+                              <input type="text" class="form-control" ng-model="complements.brand" placeholder="Marca" />
+                            </div>
+                          </td>
+                          <td class="active">
+                            <div class="input-group-sm">
+                              <input type="text" class="form-control" ng-model="complements.color" typeahead="item as item.color for item in colors | filter:$viewValue | limitTo:8" autocomplete="off" typeahead-template-url="searchAutocompleteTpl.html" placeholder="Color" typeahead-position="shoes.thPosition" />
+                            </div>
+                          </td>
+                          <td class="active">
+                            <div class="input-group-sm" ng-class="{'has-error': kz.ticketsComplementsForm.needsAttention(ticketsComplementsForm.cprice)}">
+                              <input type="number" class="form-control" ng-model="complements.price" placeholder="Precio" name="cprice" min="0" required />
+                            </div>
+                          </td>
+                          <td class="active">
+                            <div class="input-group-sm"  ng-class="{'has-error': kz.ticketsComplementsForm.needsAttention(ticketsComplementsForm.cquantity)}">
+                              <input type="number" class="form-control" ng-model="complements.quantity" placeholder="Cantidad" name="cquantity" min="1" required />
+                            </div>
+                          </td>
+                          <td class="active">
+                            <button class="btn btn-default btn-sm" type="button" data-ng-click="complements.reset()">
+                              <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                          </td>
+                          <td class="active">
+                            <input type="submit" class="btn btn-primary btn-sm" value="Añadir" />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </tab>
+          <tab heading="Tickets">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table text-center searchable">
+                    <tbody>
+                     <tr>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="tickets.code" typeahead="item for item in tickets.codes | filter:$viewValue | limitTo:10" autocomplete="off" placeholder="Código" typeahead-on-select="tickets.pagination.search()" data-ng-change="tickets.pagination.search()" typeahead-position="shoes.thPosition"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="tickets.date" placeholder="Fecha" data-ng-change="tickets.pagination.search()" />
+                          </div>
+                        </td>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="tickets.employee" typeahead="item for item in tickets.employees | filter:$viewValue | limitTo:10" autocomplete="off" placeholder="Empleado" typeahead-on-select="tickets.pagination.search()" data-ng-change="tickets.pagination.search()" typeahead-position="shoes.thPosition"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                           <div class="input-group-sm">
+                            <input type="text" class="form-control" ng-model="tickets.state" typeahead="item for item in tickets.states | filter:$viewValue | limitTo:8" autocomplete="off" placeholder="Estado" data-ng-change="tickets.pagination.search()" typeahead-position="shoes.thPosition" typeahead-on-select="tickets.pagination.search()" />
+                          </div>
+                        </td>
+                        <td class="active">
+                          <button class="btn btn-default btn-sm" type="button" data-ng-click="tickets.reset()">
+                            <span class="glyphicon glyphicon-trash"></span>
+                          </button>
+                          <button type="button" class="btn btn-primary btn-sm" ng-click="tickets.setToday()">Hoy</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-responsive" data-ng-show="tickets.pagination.totalItems > 0">
+                  <table class="table text-center">
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Empleado</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                     <tr data-ng-repeat="item in tickets.items" data-ng-class="{active: ($index%2)==0}">
+                      <td>{{item.code}}</td>
+                      <td>{{tickets.parseDate(item.date_end)}}</td>
+                      <td>{{item.employee}}</td>
+                      <td>{{item.status}}</td>
+                      <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-show="item.status == 'RESERVADO'" data-ng-click="tickets.abortTicket(item.code, $index)" data-ng-disabled="item.disabled">Anular</button>
+                        <a ui-sref="tickets.reserve({ code: item.code })" class="btn btn-success btn-sm" data-ng-show="item.status == 'RESERVADO'">Cobrar</a>
+                        <a ui-sref="tickets.return({ code: item.code })" class="btn btn-danger btn-sm" data-ng-show="item.status == 'VENDIDO'">Devolver</a>
+                        <button type="button" class="btn btn-success btn-sm" data-ng-show="item.status == 'VENDIDO'" data-ng-click="tickets.reprintTicket($index)">Reimprimir</button>
+                      </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center" data-ng-show="tickets.pagination.pages > 1">
+                  <pagination boundary-links="true" total-items="tickets.pagination.totalItems" max-size="tickets.pagination.maxSize" items-per-page="tickets.pagination.itemsPerPage" page="tickets.pagination.currentPage" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" on-select-page="tickets.pagination.setPage(page)" num-pages="tickets.pagination.pages"></pagination>
+                </div>
+              </div>
+            </div>
+          </tab>
+          <tab heading="Caja">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table text-center searchable">
+                    <tbody>
+                     <tr>
+<!--                         <td class="active">
+                          <div class="input-group-sm">
+                            <input type="text" class="form-control" placeholder="Fecha Desde" data-ng-model="box.dateFrom"/>
+                          </div>
+                        </td> -->
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <!-- <input type="text" class="form-control" placeholder="Fecha" data-ng-model="box.date" style="display:inline;width:75%;" datepicker-popup="dd/MM/yyyy" is-open="box.dp_open" datepicker-options="box.dateOptions" date-disabled="box.dateDisabled(date, mode)" />
+                            <button class="btn btn-sm btn-default" data-ng-click="box.datePicker($event)">
+                              <i class="glyphicon glyphicon-calendar"></i>
+                            </button> -->
+                            <input type="text" class="form-control" placeholder="Fecha" data-ng-model="box.date" />
+                          </div>
+                        </td>
+                        <td class="active">
+                          <div class="input-group-sm">
+                            <input type="number" class="form-control" placeholder="Deposito Inicial" min="0" data-ng-model="box.initialCash" data-ng-change="box.applyInitCash()"/>
+                          </div>
+                        </td>
+                        <td class="active">
+                          <button class="btn btn-default btn-sm" type="button" data-ng-click="box.reset()">
+                            <span class="glyphicon glyphicon-trash"></span>
+                          </button>
+                          <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-default" ng-click="box.makeBox()">Hacer Caja</button>
+                            <button type="button" class="btn btn-sm btn-default dropdown-toggle" ng-disabled="box.total == 0 || !box.result.length">
+                              <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                              <li><a ng-click="box.printToPDF()">Imprimir PDF</a></li>
+                              <li><a ng-click="box.printToTicket()">Imprimir Ticket</a></li>
+                            </ul>
+                          </div>
+                        </td>
+                        <td class="active" ng-show="box.result.length">
+                          <div class="input-group-sm">
+                            <span class="input-group-addon" style="text-align:center;width:90px;">{{box.total}} &euro;</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style="margin:50px;" ng-show="box.progress">
+                  <div class="progress progress-striped active">
+                    <div class="progress-bar" style="width: 100%"></div>
+                  </div>
+                </div>
+                <div class="alert alert-warning" style="margin:50px;" ng-show="!box.progress && !box.result.length">
+                  <p class="text-center"><strong>¡ Hoy no se ha realizado ninguna operación ... !</strong></p>
+                  <p class="text-center">Recuerda, desde esta sección puedes obtener un resumen de las operaciones realizadas al cabo de la joranada laboral.</p>
+                </div>
+                <div class="table-responsive" ng-show="!box.progress && box.result.length">
+                  <table id="tickets_box_summary" class="table text-center">
+                    <thead>
+                      <tr>
+                        <th>Emplead@</th>
+                        <th>Ventas</th>
+                        <th>Dev. (Vale)</th>
+                        <th>Dev. (&euro;)</th>
+                        <th>Reservas</th>
+                        <th>T. Efectivo</th>
+                        <th>T. Tarjeta</th>
+                        <th>T. Devuelto</th>
+                        <th>Total (&euro;)</th>
+                        <th>Caja (&euro;)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="box-resume">
+                     <tr data-ng-repeat="item in box.result" data-ng-class="{active: ($index%2)==0 && $index+1<box.result.length}">
+                        <td>{{item.employee}}</td>
+                        <td>{{item.ordered}}</td>
+                        <td>{{item.returned_voucher}}</td>
+                        <td>{{item.returned_cash}}</td>
+                        <td>{{item.booked}}</td>
+                        <td>{{item.total_cash}}</td>
+                        <td>{{item.total_credit}}</td>
+                        <td>{{item.total_rcash}}</td>
+                        <td>{{item.total}}</td>
+                        <td>{{item.total_box}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </tab>
+        </tabset>
+      </div>  
+    </div>
+    <div class="col-xs-12 col-md-3">
+
+      <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+          <h3 class="panel-title pull-left" >Resumen Venta</h3>
+        </div>
+        <div class="panel-body">
+          <div class="text-center">
+            <div class="form-group">
+              <label class="control-label" for="ticket_total" style="font-size:28px;">TOTAL</label>
+              <!--
+              <p><span class="input-group-addon" style="font-size:32px;">34,75 &euro;</span></p>
+              -->
+              <div class="input-group">
+                <input type="text" class="form-control total-ticket" id="ticket_total" data-ng-model="ticketTotal" disabled/><span class="input-group-addon">&euro;</span>
+              </div>
+            </div> 
+            <div class="form-group has-success">
+              <label class="control-label" for="ticket_received" style="font-size:28px;">ENTREGA</label>
+              <div class="input-group">
+              <input type="text" class="form-control total-ticket" style="background-color:#D7EFDB;" data-ng-model="ticketReceived" id="ticket_received" data-ng-change="computeExchange()" data-ng-disabled="ticketPM == 'credit' || ticketPM == 'combined'"/>
+              <span class="input-group-addon">&euro;</span>
+              </div>
+            </div>
+            <div class="form-group has-error">
+              <label class="control-label" for="ticket_returned" style="font-size:28px;">CAMBIO</label>
+              <div class="input-group">
+                <input type="text" class="form-control total-ticket" style="background-color:#f2dede;" data-ng-model="ticketReturned" id="ticket_returned" disabled/><span class="input-group-addon">&euro;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+        </div>
+      </div>
+
+      <div class="panel panel-default" data-ng-show="ticketTotal != 0">
+        <div class="panel-heading clearfix">
+          <h3 class="panel-title pull-left">Forma de Pago</h3>
+        </div>
+        <div class="panel-body">
+          <div>
+            <div class="radio">
+              <label for="ticket_paymethod_cash">
+                <input type="radio" id="ticket_paymethod_cash" data-ng-model="ticketPM" value="cash" data-ng-click="payment_method.reset()"/>
+                Efectivo
+              </label>
+            </div>
+            <div class="radio" data-ng-show="ticketTotal > 0">
+              <label for="ticket_paymethod_credit">
+                <input type="radio" id="ticket_paymethod_credit" data-ng-model="ticketPM" value="credit" data-ng-click="payment_method.reset()"/>
+                Tarjeta Crédito
+              </label>
+            </div>
+            <div class="radio">
+              <label for="ticket_paymethod_voucher">
+                <input type="radio" id="ticket_paymethod_voucher" data-ng-model="ticketPM" value="voucher" data-ng-click="payment_method.reset('voucher')"/>
+                Cheque Vale
+              </label>
+              <!--
+              <span class="glyphicon glyphicon-question-sign" style="margin-left:5px;cursor:pointer;"></span>
+              -->
+              <div ng-show="payment_method.voucher" style="position:relative;left:-20px;">
+                <table style="margin:10px 0;">
+                    <tr>
+                      <td><div data-ng-class="{'has-error': payment_method.voucher_code_error}" ><input type="text" class="form-control" data-ng-model="payment_method.voucher_code" /></div></td>
+                      <td><button class="btn btn-default" type="button" data-ng-click="payment_method.validate()" ><span class="glyphicon glyphicon-question-sign"></span></button></td>
+                    </tr>
+                </table>
+              </div>
+            </div>
+            <div class="radio" data-ng-show="ticketTotal > 0">
+              <label for="ticket_paymethod_combined">
+                <input type="radio" id="ticket_paymethod_combined" data-ng-model="ticketPM" value="combined" data-ng-click="payment_method.reset('combined')"/>
+                Pago Combinado 
+              </label>
+              <div ng-show="payment_method.combined" style="margin:15px 0;position:relative;left:-20px;">
+                <div>
+                  Efectivo:
+                  <input type="number" min="0" class="form-control" placeholder="Efectivo" data-ng-model="payment_method.combined_cash" data-ng-change="payment_method.compute_combined()" />
+                </div>
+                <div style="margin-top:5px">
+                  Tarjeta Credito:
+                  <input type="number" min="0" class="form-control" placeholder="Tarjeta Crédito" data-ng-model="payment_method.combined_credit" data-ng-change="payment_method.compute_combined()" />
+                </div>
+                <div style="margin-top:5px">
+                  Cheque Vale:
+                  <input type="number" min="0" class="form-control" placeholder="Cheque Vale" data-ng-model="payment_method.combined_voucher" data-ng-change="payment_method.compute_combined()" />
+                </div>
+                <div style="margin-top:8px" data-ng-show="payment_method.combined_needed > 0">
+                  <p>HASTA TOTAL FALTAN: {{payment_method.combined_needed}} EUROS</p>
+                </div>
+              </div>
+            </div>
+            
+            <!--
+            <div class="radio">
+              <label for="ticket_paymethod_combined">
+                <input type="radio" id="ticket_paymethod_combined" data-ng-model="ticketPM" value="combined"/>
+                Teléfono Móvil
+              </label>
+            </div> 
+            <div class="radio">
+              <label for="ticket_paymethod_combined">
+                <input type="radio" id="ticket_paymethod_combined" data-ng-model="ticketPM" value="combined"/>
+                Pago Combinado
+              </label>
+            </div>
+            --> 
+          </div>
+        </div>
+        <div class="panel-footer">
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!--
+<div class="container">
+
+  <div class="row">
+    <div class="col-xs-6 col-md-8"> 
+      <div class="panel panel-default panel-custom"></div>
+      <div class="panel panel-default panel-custom"></div>
+    </div>
+    <div class="col-xs-6 col-md-4">
+      <div class="panel panel-default panel-custom"></div>
+    </div>
+  </div>
+  
+</div>
+-->
+
+
+    

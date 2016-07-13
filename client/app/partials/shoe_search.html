@@ -1,0 +1,28 @@
+ <div class="table-responsive">
+    <table class="table text-center" style="margin-bottom:0">
+      <tbody>
+       <tr style="border-bottom:1px dotted #CAC5C5;">
+          <td class="active">
+            <div class="input-group-sm">
+              <input type="text" class="form-control" ng-model="$parent.query.brand" typeahead="item for item in brands | filter:$viewValue | limitTo:10" autocomplete="off" placeholder="Marca" data-ng-disabled="pagination.totalItems < 1 && !searching" typeahead-on-select="pagination.search()" data-ng-change="updateSearch('brand')"/>
+            </div>
+          </td>
+          <td class="active">
+             <div class="input-group-sm">
+              <input type="text" class="form-control" ng-model="$parent.query.color" typeahead="item as item.color for item in colors | filter:$viewValue | limitTo:8" autocomplete="off" typeahead-template-url="searchAutocompleteTpl.html" placeholder="Color" data-ng-change="pagination.search()" typeahead-on-select="pagination.search()" />
+            </div>
+          </td>
+          <td class="active">
+             <div class="input-group-sm">
+              <input type="number" class="form-control" ng-model="$parent.query.size"  data-ng-change="pagination.search()" placeholder="Talla" min="18" max="45" required />
+            </div>
+          </td>
+          <td class="active">
+             <div class="input-group-sm">
+              <input type="text" class="form-control" ng-model="$parent.query.category" typeahead="item for item in ['HOMBRES','MUJERES','NIÑOS'] | filter:$viewValue " autocomplete="off" placeholder="Categoría" data-ng-change="updateSearch('category')" typeahead-on-select="pagination.search()" />
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+</div>

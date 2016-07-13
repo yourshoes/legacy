@@ -1,0 +1,30 @@
+{
+    "name": "Kalzate",
+    "description": "Kalzate Server",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": 
+    {
+        "express": "3.x",
+        "passport": "*",
+        "passport-local": "*",
+        "mongoose":"3.6.11",
+        "json2csv":"*",
+        "pdfkit":"*",
+        "qrcode":"*",
+        "barc":"*",
+        "moment":"*",
+        "nodemailer":"*",
+        "archiver":"*"
+    },
+    "devDependencies": 
+    {
+        "mocha": "1.9.0",
+        "should": "1.2.2",
+        "supertest": "0.6.0"
+    },
+    "scripts": 
+    {
+        "test": "make test"
+    }
+}

@@ -1,0 +1,21 @@
+FROM node
+
+MAINTAINER Zuri Pabon, zurisadai.pabon@gmail.com
+
+# Install Mean.JS Prerequisites
+RUN apt-get install libcairo2-dev
+
+# Make everything available for start
+ADD . /home/kalzate
+
+WORKDIR /home/kalzate/server
+
+# Install Mean.JS packages
+# RUN npm install
+
+# currently only works for development
+ENV NODE_ENV development
+
+# Port 3000 for server
+EXPOSE 3000
+CMD [ "npm", "start" ]

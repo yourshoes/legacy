@@ -1,0 +1,104 @@
+<div class="panel panel-default panel-custom">
+  <div class="panel-heading clearfix">
+    <h3 class="panel-title pull-left" >Devolución de Stock: {{code}}</h3>
+    <div class="btn-group pull-right">
+      <button class="btn btn-default" data-ng-click="cancel()">Nuevo Ticket</button>
+      <button class="btn btn-default" data-ng-disabled="($parent.ticketPM == 'cash' && !$parent.hasPaid()) || $parent.processingTicket || $parent.oldTicketInfo.total == 0" data-ng-click="returnTicket()">Finalizar Devolución</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="table-responsive">
+      <table class="table text-center">
+        <thead>
+          <tr>
+            <th>Referencia</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>PVP</th>
+            <th>Dto.</th>
+            <th>Subtotal</th>
+            <th>Devolver</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-ng-repeat="item in returnProducts" data-ng-class="{active: ($index%2)==0}">
+            <td>{{item.reference}}</td>
+            <td>{{item.description}}</td>
+            <td><span class="glyphicon glyphicon-chevron-left pointer" ng-show="item.quantity > 1" ng-click="decReturnQty($index)"></span> {{item.quantity}} <span class="glyphicon glyphicon-chevron-right pointer" ng-show="item.quantity < item.totalQuantity" ng-click="incReturnQty($index)"></span></td>
+            <td>{{item.price}}</td>
+            <td>{{item.discount}}</td>
+            <td>{{item.subtotal}}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-default" style="width:40px;height:30px;" ng-model="item.returned" ng-click="returnItem($index)" btn-checkbox>
+                <span class="glyphicon glyphicon-remove" ng-show="item.returned"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel-footer clearfix">
+    <div class="pull-left">
+      <div class="input-group input-group-sm pull-left">
+        <span class="input-group-addon">Impuesto (%)</span>
+        <input type="number" class="form-control" min="0" max="21" ng-model="returnTicketTax" step="1" style="width:70px;" disabled />
+      </div>
+      <div class="input-group input-group-sm pull-left">
+        <span class="input-group-addon">Descuento (%)</span>
+        <input type="number" class="form-control" min="0" ng-model="returnTicketDiscount" step="1" style="width:70px;" disabled />
+      </div>
+    </div>
+    <div class="pull-right"> 
+      <p style="font-weight:bold;font-size:15px;position:relative;top:5px;">TOTAL DEVOLUCIÓN: {{returnTicketTotal}}</p>
+    </div>
+  </div>
+</div>
+<div class="panel panel-default panel-custom" data-ng-show="$parent.products.length > 0">
+  <div class="panel-heading clearfix">
+    <h3 class="panel-title">Añadir a la Devolución</h3>
+  </div>
+  <div class="panel-body">
+    <div class="table-responsive" >
+      <table class="table text-center">
+        <thead>
+          <tr>
+            <th>Referencia</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>PVP</th>
+            <th>Dto.</th>
+            <th>Subtotal</th>
+            <th>Quitar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-ng-repeat="item in $parent.products" data-ng-class="{active: ($index%2)==0}">
+            <td>{{item.reference}}</td>
+            <td>{{item.description}}</td>
+            <td><span class="glyphicon glyphicon-chevron-left pointer" ng-show="item.quantity > 1 && !$parent.changingQty" ng-click="$parent.decQty($index,item.type == 's')"></span> {{item.quantity}} <span class="glyphicon glyphicon-chevron-right pointer" ng-show="(item.shoe_qty > 0 && !$parent.changingQty) || item.type == 'c'" ng-click="$parent.incQty($index,item.type == 's')"></span></td>
+            <td>{{item.price}}</td>
+            <td><input type="text" ng-model="item.discount" class="inline-editing-inactive" data-ng-change="$parent.applySubRate($index)"/></td>
+            <td>{{item.subtotal}}</td>
+            <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="$parent.removeFromTicket($index,item.type == 's')"><span class="glyphicon glyphicon-remove"></span></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel-footer clearfix">
+    <div class="pull-left">
+      <div class="input-group input-group-sm pull-left">
+        <span class="input-group-addon">Impuesto (%)</span>
+        <input type="number" class="form-control" min="0" max="21" ng-model="$parent.ticketTax" step="1" style="width:70px;" data-ng-disabled="$parent.products.length == 0" data-ng-change="$parent.applyRate(true)"/>
+      </div>
+      <div class="input-group input-group-sm pull-left">
+        <span class="input-group-addon">Descuento (%)</span>
+        <input type="number" class="form-control" min="0" ng-model="$parent.ticketDiscount" step="1" style="width:70px;" data-ng-disabled="$parent.products.length == 0" data-ng-change="$parent.applyRate(false)"/>
+      </div>
+    </div>
+    <div class="pull-right"> 
+      <p style="font-weight:bold;font-size:15px;position:relative;top:5px;">TOTAL VENTA: {{$parent.ticketTotal - $parent.oldTicketInfo.total}}</p>
+    </div>
+  </div>
+</div>

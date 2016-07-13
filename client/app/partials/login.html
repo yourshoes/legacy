@@ -1,0 +1,21 @@
+<div id="signin" class="container" ng-controller="LoginCtrl">
+	<div class="panel panel-default panel-signin">
+  		<div class="panel-body">
+		    <form kz-submit="login()" name="loginForm" novalidate>
+			    <h2 class="form-signin-heading">¡Inicia Sesión!</h2>
+			    <div ng-class="{'has-error': kz.loginForm.needsAttention(loginForm.username)}">
+			    	<input type="email" placeholder="Emplead@" class="form-control" ng-model="username" name="username" typeahead="item for item in ['ana.de.la.rosa.villalobos@gmail.com','canciondiferente@hotmail.com'] | filter:$viewValue | limitTo:1" autocomplete="off" required/>
+			    </div>
+			    <div ng-class="{'has-error': kz.loginForm.needsAttention(loginForm.password)}">
+			    	<input type="password" placeholder="Contraseña" class="form-control" pattern=".{8,}" ng-model="password" name="password"  ng-minlength="8" required/>
+			    </div>
+			    <input type="submit" class="btn btn-lg btn-primary btn-block" value="Acceder"/>
+			    <small class="text-primary">
+			    	<a ui-sref="recover">¿Has olvidado tu contraseña?</a> | 
+			    	<a ui-sref="register">Crea una cuenta</a>
+			    </small>
+		  	</form>
+    		<div ng-show="error" class="alert alert-danger"><p class="text-center"><strong>Hmmm...¡No te conozco!</strong></p></div>
+  		</div>
+	</div>
+</div>
