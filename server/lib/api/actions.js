@@ -7,7 +7,8 @@ var userDB = require('../db/users')
     , crypto = require('crypto')
     , passport = require('passport')
     , fs = require('fs')
-    , ObjectId = require('mongoose').mongo.BSONPure.ObjectID//.Types.ObjectId;
+    , ObjectId = require('mongoose').Types.ObjectId//.Types.ObjectId;
+    , printer = require('electron-printer')
 
 require('../auth/conf');
 
@@ -17,16 +18,49 @@ require('../auth/conf');
 |--------------------------------------------------------------------------
 */
 
-var roles = require('../../../client/app/js/config').userRoles;
+var roles = require('../../client/app/js/config').userRoles;
 
 exports.index = function (req, res)
 {
-    fs.readFile(__dirname + '/../../../client/app/index.html', 'utf8', function(err, text){
-        
+    fs.readFile(__dirname + '/../../client/app/index.html', 'utf8', function(err, text){
+
         res.send(text);
     });
 
     //on production, index.html must be set directly
+};
+
+exports.print = function (req, res) {
+    
+    function toBytes(str) {
+        var arr = []
+        for (var i=0; i < str.length; i++) {
+            arr.push(str[i].charCodeAt(0))
+        }
+        return arr;
+    }
+
+    //qz.appendHex("x1Bx40");
+    var print = req.body.data;
+
+    //var printData = print.content;
+    var printData = toBytes(print.content).concat([0x1B, 0x69, 0x1B, 0x70, 0x00, 0x09, 0x09]);
+
+    printer.printDirect({
+        data: new Buffer(printData)
+        //data: printData
+        , printer: 'termica'
+        , type: "RAW"
+        , success:function(){
+            res.send(200);
+        }
+        , error:function(err){
+
+            console.error(err);
+            res.send(404);
+
+        }
+    });
 };
 
 exports.login = [passport.authenticate('local'), function (req, res){
@@ -51,7 +85,7 @@ exports.createUser = function(req, res, next){
 
     var data = req.body
         ,user = new userDB({
-    
+
         'email'     : data['email'],
         'username'  : (data['username']) ? data['username'] : data['email'].replace(/@.*/gi,''),
         'role'      : 'employee',
@@ -65,13 +99,13 @@ exports.createUser = function(req, res, next){
         if(err) return next(err);
 
         req.login(user, function (err) {
-    
+
             if (err) { return next(err); }
             console.log('error:',err);
             return res.send(200, {username:user['username'], role: roles[user['role']]});
         });
 
-    }); 
+    });
 };
 
 exports.recoverUser = function(req, res, next){
@@ -84,10 +118,10 @@ exports.recoverUser = function(req, res, next){
 
 
     var generated = 'xxxxxxxx'.replace(/[x]/g, function(c) {
-    
+
             var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
             return v.toString(16);
-        
+
         }),
         new_passwd = crypto.createHash('md5').update(generated).digest("hex");
 
@@ -102,7 +136,7 @@ exports.recoverUser = function(req, res, next){
 
         var nodemailer = require('nodemailer');
         //Enviamos email
-        var mailOptions = 
+        var mailOptions =
         {
             from: "tantest@noreply.com", // sender address
             to: req.body.email, // list of receivers
@@ -114,18 +148,18 @@ exports.recoverUser = function(req, res, next){
         var smtpTransport = nodemailer.createTransport("SMTP",
         {
             service: "Gmail",
-            auth: 
+            auth:
             {
                 user: "tantestapp@gmail.com",
                 pass: "tantEsT@ _xoprt786371224y1"
             }
         });
 
-        smtpTransport.sendMail(mailOptions, 
+        smtpTransport.sendMail(mailOptions,
         function(err, response)
         {
             //console.log(err,response);
-            smtpTransport.close(); 
+            smtpTransport.close();
             //return res.send({access:0,result:{error:0}});
         });
     });
@@ -181,16 +215,16 @@ exports.GetShoes = function (req, res, next)
         shoesDB
         .find(!data['search'] ? {} : data['search'],{reference:1, brand:1, size:1, category:1, color:1, quantity:1, price:1, images:1, has_qr:1, barcode:1}, {limit:data['limit'], skip:data['offset']})
         .sort(data['order'])
-        .execFind(function (err, shoes){            
-            
-            if (err) 
+        .exec(function (err, shoes){
+
+            if (err)
             {
                 return next(err);
             }
 
             shoesDB.count(!data['search'] ? {} : data['search'],function (err, count) {
-            
-                if (err) 
+
+                if (err)
                 {
                     return next(err);
                 }
@@ -198,8 +232,8 @@ exports.GetShoes = function (req, res, next)
                 res.send({count: count, items: shoes});
 
             });
-            
-            
+
+
         });
     }
     else
@@ -215,9 +249,9 @@ exports.GetShoe = function (req, res, next)
         var id = req.param('id');
 
         shoesDB
-        .findById(id, {qr:0, 'last-modified':0, history:0, sold:0}, function (err, shoe){            
-            
-            if (!shoe || err) 
+        .findById(id, {qr:0, 'last-modified':0, history:0, sold:0}, function (err, shoe){
+
+            if (!shoe || err)
             {
                 return res.send(401);
             }
@@ -239,12 +273,12 @@ exports.EditShoe = function (req, res, next)
 
         shoesDB
         .findByIdAndUpdate(id, {$set: req.body}, function(err, shoe){
-        
-            if (!shoe || err) 
+
+            if (!shoe || err)
             {
                  return res.send(401);
             }
-            
+
             res.send(true);
         });
     }
@@ -268,7 +302,7 @@ exports.AddShoes = function (req, res, next)
 
             res.send(200, shoe);
 
-        }); 
+        });
     }
     else
     {
@@ -280,7 +314,7 @@ exports.ImportShoes = function (req, res, next)
 {
     if(req.user && req.user.role == 'employee')
     {
-        
+
         var data = req.body;
 
         if(data.remove)
@@ -311,7 +345,7 @@ exports.ImportShoes = function (req, res, next)
 
             });
         }
-        
+
     }
     else
     {
@@ -329,18 +363,18 @@ exports.upload = function(req, res, next)
             , decodedImage = new Buffer(data, 'base64')//decodedImage = new Buffer(matches[2], 'base64')
             , name = (new Date().getTime()).toString(36)+'_'+img['name']
             , relative = '/static/uploaded/'+name
-            , absolute = __dirname + '/../../../client/app/uploaded/'+name
+            , absolute = __dirname + '/../../client/app/uploaded/'+name
             ;
 
             //var data = img['data'].substr(img['data'].indexOf('base64') + 7);
             //decodedImage = new Buffer(data, 'base64')
         fs.writeFile(absolute, decodedImage, function(err) {
-        
+
             if(err)
             {
                 return next(err);
             }
-        
+
             res.send(relative);
         });
     }
@@ -348,7 +382,7 @@ exports.upload = function(req, res, next)
     {
         res.send(401);
     }
-    
+
 };
 
 /*exports.deletePhoto = function(req, res, next)
@@ -356,23 +390,23 @@ exports.upload = function(req, res, next)
     if(req.user && req.user.role == 'employee')
     {
         var relative = req.body.replace("static/uploaded/","")
-            , absolute = __dirname + '/../../../client/app/uploaded/'+relative
+            , absolute = __dirname + '/../../client/app/uploaded/'+relative
             ;
 
             //var data = img['data'].substr(img['data'].indexOf('base64') + 7);
             //decodedImage = new Buffer(data, 'base64')
         require('fs').unlink(absolute, function (err) {
-          
+
           if (err) next(err);
           res.send(200);
-        
+
         });
     }
     else
     {
         res.send(401);
     }
-    
+
 };*/
 
 exports.ExportShoesCsv = function(req, res, next)
@@ -380,9 +414,9 @@ exports.ExportShoesCsv = function(req, res, next)
     if(req.user && req.user.role == 'employee')
     {
         shoesDB
-        .find({}, function (err, shoes){            
-            
-            if (err) 
+        .find({}, function (err, shoes){
+
+            if (err)
             {
                 return next(err);
             }
@@ -390,7 +424,7 @@ exports.ExportShoesCsv = function(req, res, next)
             var json2csv = require('json2csv');
 
             json2csv({data: shoes, fields: ['reference','brand','color','size','quantity','category','price']}, function(err, csv) {
-                
+
                 if (err)
                 {
                     return next(err);
@@ -406,7 +440,7 @@ exports.ExportShoesCsv = function(req, res, next)
     {
         res.send(401);
     }
-    
+
 };
 
 
@@ -416,25 +450,25 @@ exports.ExportShoesPdf = function(req, res, next)
     {
         /*
 var fs = require('fs')
-            ,path = __dirname + '/../../../client/app/barcodes/'
+            ,path = __dirname + '/../../client/app/barcodes/'
             ;
 
         if(fs.existsSync(path+'zapatos_barcodes.pdf'))
-        {   
+        {
             return res.send({cache:true});
         }
         */
         shoesDB
-        .find({},{reference:1,brand:1,color:1,size:1,barcode:1, quantity:1}, function (err, shoes){            
-            
-            if (err) 
+        .find({},{reference:1,brand:1,color:1,size:1,barcode:1, quantity:1}, function (err, shoes){
+
+            if (err)
             {
                 return next(err);
             }
 
             var PDFDoc = require('pdfkit')
                 ,doc = new PDFDoc({size:'A4', info:{title:'Kalzate Barcodes', author: 'Zurisadai'}})
-                , path = __dirname + '/../../../client/app/barcodes/'
+                , path = __dirname + '/../../client/app/barcodes/'
                 ,barc = new (require('barc'))({fontsize:'16px'})
                 ,x = 9
                 ,y = 17
@@ -453,13 +487,13 @@ var fs = require('fs')
                 //doc.text(shoes[i]['reference']+' | '+shoes[i]['brand']+' | '+shoes[i]['color']+' | '+shoes[i]['size']);
 
                 imgPath = path+shoes[i]['barcode']+'.png';
-                
+
                 if(!fs.existsSync(imgPath))
                 {
-                    
+
                     try
                     {
-                        
+
                         fs.writeFileSync(imgPath, barc.code128(shoes[i]['barcode'], 210, 110));
                     }
                     catch(e)
@@ -497,7 +531,7 @@ var fs = require('fs')
                         }
                         else
                         {
-                           text.push(long_text); 
+                           text.push(long_text);
                         }
 
                         in_c = h;
@@ -528,8 +562,8 @@ var fs = require('fs')
                             }
                             else
                             {
-                               text.push(long_text); 
-                            }    
+                               text.push(long_text);
+                            }
                         }
                         //Si ya no quedan mas elementos, por ejemplo una columna de 4 elementos en vez de completa(6 elementos)
                         if(j==total_length)
@@ -579,22 +613,22 @@ var fs = require('fs')
                 res.send(true);
             });
 
-            
-            
+
+
             /*doc.output(function(pdf){
 
                 res.attachment('zapatos_barcodes.pdf');
                 res.setHeader('Content-Type', 'text/pdf');
                 res.end(pdf,'binary');
             })*/
-            
+
         });
     }
     else
     {
         res.send(401);
     }
-    
+
 };
 
 exports.GetShoesFields = function (req, res, next)
@@ -605,9 +639,9 @@ exports.GetShoesFields = function (req, res, next)
 
         shoesDB
         .distinct(data['field'])
-        .exec(function (err, field) {       
-            
-            if (err) 
+        .exec(function (err, field) {
+
+            if (err)
             {
                 return next(err);
             }
@@ -636,9 +670,9 @@ exports.RemoveShoe = function (req, res, next)
     {
 
         shoesDB
-        .remove({ _id: req.body.id }, function (err) {       
-            
-            if (err) 
+        .remove({ _id: req.body.id }, function (err) {
+
+            if (err)
             {
                 return next(err);
             }
@@ -663,9 +697,9 @@ exports.getQR = function (req, res, next)
         if(data['has_qr'])
         {
             shoesDB
-            .findById(data['id'], {qr:1}, function (err, item) {       
-                
-                if (err) 
+            .findById(data['id'], {qr:1}, function (err, item) {
+
+                if (err)
                 {
                     return next(err);
                 }
@@ -678,16 +712,16 @@ exports.getQR = function (req, res, next)
             var QRCode = require('qrcode');
 
             QRCode.toDataURL('http://www.kalzate.es/qr/zapatos/ver/'+data['id'],function (err,dataURL){
-                
-                if (err) 
+
+                if (err)
                 {
                     return next(err);
                 }
 
                 shoesDB
                 .findByIdAndUpdate(data['id'], {$set: {'qr':dataURL, 'has_qr':true}}, function(err, item){
-                
-                    if (err) 
+
+                    if (err)
                     {
                         return next(err);
                     }
@@ -695,12 +729,12 @@ exports.getQR = function (req, res, next)
                     console.log('regenera');
                     res.send({qr:item.qr});
                 });
-                
+
             });
 
-            
+
         }
-       
+
     }
     else
     {
@@ -714,13 +748,13 @@ exports.getBarCode = function (req, res, next)
     {
         var bc = req.body['barcode']
             ,fs = require('fs')
-            ,path = __dirname + '/../../../client/app/barcodes/'+bc+'.png'
+            ,path = __dirname + '/../../client/app/barcodes/'+bc+'.png'
             ,barc = new (require('barc'))({fontsize:'16px'})
             ,buf = barc.code128(bc, 210, 110)
             ;
 
         fs.writeFile(path, buf, function(err){
-            
+
             if(err)
             {
                 return res.send(404);
@@ -730,7 +764,7 @@ exports.getBarCode = function (req, res, next)
 
             res.send("data:image/png;base64,"+base64data);
         });
-        
+
     }
     else
     {
@@ -757,7 +791,7 @@ exports.newTicket = function (req, res, next)
             //console.log('NEW-TICKET', err, tickets);
 
             if(!err && tickets.length)
-            {   
+            {
                 var numQueries = 0;
 
                 return tickets.forEach(function(ticket,i){
@@ -786,7 +820,7 @@ exports.newTicket = function (req, res, next)
 
                     //console.log('BORRAMOS EL TICKET');
 
-                    for(var j = 0; j < ticket.products.length; j++) 
+                    for(var j = 0; j < ticket.products.length; j++)
                     {
                         var product = ticket.products[j];
 
@@ -858,7 +892,7 @@ exports.newTicket = function (req, res, next)
                                     */
                                 });
                             }
-                        });  
+                        });
                     }
 
                     if(!ticket.products.length)
@@ -929,7 +963,7 @@ exports.updateTicket = function (req, res, next)
         var data = req.body;
 
         data['product']['ts'] = (new Date()).getTime();
-        
+
         ticketsDB.update({'_id': data['_id'], 'status':'EXPIRING'}, { '$push': { 'products': data['product'] }}, function (err){
 
             if(err)
@@ -938,7 +972,7 @@ exports.updateTicket = function (req, res, next)
             }
 
 
-            shoesDB.update({'_id': data['product']['_id'], 'quantity': {'$gte': 0}}, 
+            shoesDB.update({'_id': data['product']['_id'], 'quantity': {'$gte': 0}},
             { $inc: {quantity: (data['product']['qa']-data['product']['quantity'])}, '$set': { in_carts: { quantity:data['product']['quantity'], id: data['_id'], timestamp: data['product']['ts']}}}, function (err){
 
                 if(err)
@@ -1002,7 +1036,7 @@ exports.orderTicket = function (req, res, next)
 
         ticketReceipt +='                          (IVA incluido)\r\n\r\n';
 
-        switch (data['overview']['payment_method']) 
+        switch (data['overview']['payment_method'])
         {
             case 'cash':
                 ticketReceipt += ' METODO: EFECTIVO,        ENTREGA: '+received+'E\r\n                          CAMBIO:  '+data['overview']['returned']+'E\r\n';
@@ -1071,7 +1105,7 @@ exports.orderTicket = function (req, res, next)
                 break;
         }
 
-        ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 30 DIAS\r\n';
+        ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 15 DIAS\r\n';
         ticketReceipt += '\r\n       *** GRACIAS POR SU VISITA ***\r\n\r\n';
         ticketReceipt += '-   -   -   -   -   -   -   -   -   -   -\r\n\r\n\r\n';
 
@@ -1094,7 +1128,7 @@ exports.orderTicket = function (req, res, next)
                         }
 
                         res.send(ticketReceipt);
-                        
+
                     });
             });
 
@@ -1110,11 +1144,11 @@ exports.orderTicket = function (req, res, next)
                 }
 
                 res.send(ticketReceipt);
-                
+
             });
         }
 
-        
+
     }
     else
     {
@@ -1203,8 +1237,8 @@ exports.GetFieldsForTIckets = function (req, res, next)
 
         shoesDB
         .distinct('reference')
-        .exec(function (err, field) {       
-            
+        .exec(function (err, field) {
+
             if(err)
             {
                 return res.send(404);
@@ -1218,13 +1252,13 @@ exports.GetFieldsForTIckets = function (req, res, next)
             {
                 res.send(fields);
             }
-            
+
         });
 
         shoesDB
         .distinct('brand')
-        .exec(function (err, field) {       
-            
+        .exec(function (err, field) {
+
             if(err)
             {
                 return res.send(404);
@@ -1238,13 +1272,13 @@ exports.GetFieldsForTIckets = function (req, res, next)
             {
                 res.send(fields);
             }
-            
+
         });
 
         ticketsDB
         .distinct('code',{$or:[{status:'VENDIDO'}, {status:'RESERVADO'}]})
-        .exec(function (err, field) {       
-            
+        .exec(function (err, field) {
+
             if(err)
             {
                 return res.send(404);
@@ -1258,13 +1292,13 @@ exports.GetFieldsForTIckets = function (req, res, next)
             {
                 res.send(fields);
             }
-            
+
         });
 
         userDB
         .distinct('username')
-        .exec(function (err, field) {       
-            
+        .exec(function (err, field) {
+
             if(err)
             {
                 return res.send(404);
@@ -1278,7 +1312,7 @@ exports.GetFieldsForTIckets = function (req, res, next)
             {
                 res.send(fields);
             }
-            
+
         });
     }
     else
@@ -1298,7 +1332,7 @@ exports.GetTickets = function (req, res, next)
         if(data['search']['date'])
         {
             var moment = require('moment'),
-                date = data['search']['date'].split('/'),    
+                date = data['search']['date'].split('/'),
                 date_start = new Date(parseInt(date[2]), parseInt(date[1])-1, parseInt(date[0]),0,0,0),
                 date_tomorrow = moment().add('d',1).format('DD/MM/YYYY').split('/'),
                 date_end = new Date(parseInt(date_tomorrow[2]), parseInt(date_tomorrow[1])-1, parseInt(date_tomorrow[0]),0,0,0);
@@ -1334,39 +1368,39 @@ exports.GetTickets = function (req, res, next)
                 ticketsDB
                 .find(search, {code:1, employee:1, print:1, status:1, date_end:1}, {limit:data['limit'], skip:data['offset']})
                 .sort(data['order'])
-                .execFind(function (err, tickets){            
-                    
-                    if (err) 
+                .exec(function (err, tickets){
+
+                    if (err)
                     {
                         return res.send(404);
                     }
 
                     ticketsDB.count(search, function (err, count) {
-                    
-                        if (err) 
+
+                        if (err)
                         {
                             return res.send(404);
                         }
 
                         res.send({count: count, items: tickets});
-                    }); 
+                    });
                 });
             });
         }
-        
+
         ticketsDB
         .find(search, {code:1, employee:1, print:1, status:1, date_end:1}, {limit:data['limit'], skip:data['offset']})
         .sort(data['order'])
-        .execFind(function (err, tickets){            
-            
-            if (err) 
+        .exec(function (err, tickets){
+
+            if (err)
             {
                 return res.send(404);
             }
 
             ticketsDB.count(search, function (err, count) {
-            
-                if (err) 
+
+                if (err)
                 {
                     return res.send(404);
                 }
@@ -1387,9 +1421,9 @@ exports.GetTicket = function (req, res, next)
     if(req.user && req.user.role == 'employee')
     {
         ticketsDB
-        .findOne(req.body,{products:1, overview:1, date_end:1}, function(err, ticket){        
-            
-            if (err) 
+        .findOne(req.body,{products:1, overview:1, date_end:1}, function(err, ticket){
+
+            if (err)
             {
                 return res.send(404);
             }
@@ -1420,7 +1454,7 @@ exports.returnTicket = function (req, res, next)
         if(total < 0 && data['overview']['payment_method'] == 'voucher')
         {
             ticketReceipt += ' Ticket: '+data['overview']['code']+'  Fecha: '+datetime+'\r\n\r\n Atendid@ por: '+req.user.username+'\r\n\r\n------------------------------------------\r\n\r\n      ESTE TICKET VALE POR '+Math.abs(total).toFixed(2)+' EUROS\r\n\r\n------------------------------------------\r\n';
-            ticketReceipt += '\r\n        VALIDO MAXIMO HASTA 6 MESES\r\n'; 
+            ticketReceipt += '\r\n        VALIDO MAXIMO HASTA 6 MESES\r\n';
             data['overview']['voucher'] = Math.abs(total).toFixed(2);
         }
         else
@@ -1497,7 +1531,7 @@ exports.returnTicket = function (req, res, next)
 
             if(total != 0)
             {
-                switch (data['overview']['payment_method']) 
+                switch (data['overview']['payment_method'])
                 {
                     case 'cash':
                         ticketReceipt += ' METODO: EFECTIVO,        ENTREGA: '+received+'E\r\n                          CAMBIO:  '+data['overview']['returned']+'E\r\n';
@@ -1560,17 +1594,17 @@ exports.returnTicket = function (req, res, next)
                         break;
                 }
             }
-            
+
 
             if(data['products']['retained'].length)
             {
                 var today = moment(),
                     oldTicketDate = moment(data['products']['date']),
-                    days = 30 - today.diff(oldTicketDate,'days');
+                    days = 15 - today.diff(oldTicketDate,'days');
 
-                ticketReceipt += '\r\n       DEVOLUCIONES MAX. HASTA 30 DIAS\r\n';
+                ticketReceipt += '\r\n       DEVOLUCIONES MAX. HASTA 15 DIAS\r\n';
 
-                if(days <= 30)
+                if(days <= 15)
                 {
                     ticketReceipt += '\r\n      (*) DEVOLUCIONES MAX. '+days+' DIA'+(days > 1 ? 'S':'')+'\r\n';
                 }
@@ -1581,7 +1615,7 @@ exports.returnTicket = function (req, res, next)
             }
             else
             {
-                ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 30 DIAS\r\n';
+                ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 15 DIAS\r\n';
             }
         }
 
@@ -1610,7 +1644,7 @@ exports.returnTicket = function (req, res, next)
                 }
 
                 res.send(ticketReceipt);
-                
+
             });
         });
     }
@@ -1647,7 +1681,7 @@ exports.abortTicket = function (req, res, next)
                     }
 
                     res.send(true);
-                    
+
                 });
             });
         }
@@ -1676,7 +1710,7 @@ exports.abortTicket = function (req, res, next)
 
                 //console.log('ENTRA3');
 
-                shoesDB.update({'_id': promise['_id'], 'quantity': {'$gte': 0}}, 
+                shoesDB.update({'_id': promise['_id'], 'quantity': {'$gte': 0}},
                 { $inc: {quantity: (promise['qa']-promise['quantity'])}, '$set': { in_carts: { quantity:promise['quantity'], id: data['_id'], timestamp: ts}}}, function (err){
 
                     if(err)
@@ -1705,13 +1739,13 @@ exports.abortTicket = function (req, res, next)
                                 }
 
                                 res.send(true);
-                                
+
                             });
                         });
                     }
                 });
             });
-        }  
+        }
     }
     else
     {
@@ -1724,7 +1758,7 @@ exports.GetSessionTicket = function (req, res, next)
 {
     if(req.user && req.user.role == 'employee')
     {
-        
+
         var newTicket = new ticketsDB({employee:req.user.username, employee_id:req.user._id});
 
         newTicket.save(function (err){
@@ -1735,9 +1769,9 @@ exports.GetSessionTicket = function (req, res, next)
             }
 
             ticketsDB
-            .findOne(req.body,{products:1, overview:1, date_end:1}, function(err, ticket){        
-                
-                if (err) 
+            .findOne(req.body,{products:1, overview:1, date_end:1}, function(err, ticket){
+
+                if (err)
                 {
                     return res.send(404);
                 }
@@ -1778,19 +1812,19 @@ exports.GetBox = function (req, res, next)
 
             date = data['dateTo'].split('/');
             date_end = new Date(parseInt(date[2]), parseInt(date[1])-1, parseInt(date[0]),0,0,0);
-        
+
         }
 
         search['date_end'] = {"$gte":date_start, "$lt": date_end};
-        
+
         //console.log(search['date_end']);
 
         ticketsDB
-        .find(search, function (err, tickets) {            
-            
+        .find(search, function (err, tickets) {
+
             //console.log(tickets);
 
-            if(err) 
+            if(err)
             {
                 return res.send(404);
             }
@@ -1801,8 +1835,8 @@ exports.GetBox = function (req, res, next)
             }
 
             userDB
-            .find({},{username:1,_id:1}, function (err, employees) {       
-                
+            .find({},{username:1,_id:1}, function (err, employees) {
+
                 var i, box = [], temp_box = {}, summary;
 
                 summary = {employee:'', ordered:0, returned_cash:0, returned_voucher:0, returned_plus_ordered:0, booked:0, cancelled:0, total_cash:0, total_credit:0, total_voucher:0, total_rcash:0, total:0, total_tickets:0};
@@ -1816,11 +1850,11 @@ exports.GetBox = function (req, res, next)
                 for(i=0;i<tickets.length;i++)
                 {
                     if(tickets[i]['status'] == 'VENDIDO')
-                    { 
+                    {
                         //console.log(tickets[i]['overview']['total']);
                         if(tickets[i]['overview']['total'] < 0)
                         {
-                            
+
                             if(tickets[i]['box']['new'].length)
                             {
                                 temp_box[tickets[i]['employee_id']].ordered++;
@@ -1849,7 +1883,7 @@ exports.GetBox = function (req, res, next)
                         //vendido
                         else
                         {
-                            
+
                             if(tickets[i]['box'] && tickets[i]['box']['returned'].length)
                             {
                                 temp_box[tickets[i]['employee_id']].returned_plus_ordered++;
@@ -1861,7 +1895,7 @@ exports.GetBox = function (req, res, next)
 
                             //temp_box[tickets[i]['employee_id']].total += tickets[i]['overview']['total'];
                             //summary.total += tickets[i]['overview']['total'];
-                            
+
                             if(tickets[i]['overview']['payment_method'] == 'cash')
                             {
                                 temp_box[tickets[i]['employee_id']].total_cash += tickets[i]['overview']['total'];
@@ -1905,7 +1939,7 @@ exports.GetBox = function (req, res, next)
                             //if(tickets[i]['box']['returned'].length)
                             if(tickets[i]['overview']['total'] < 0)
                             {
-                                
+
                                 if(tickets[i]['box']['new'].length)
                                 {
                                     temp_box[tickets[i]['employee_id']].ordered++;
@@ -1932,7 +1966,7 @@ exports.GetBox = function (req, res, next)
                             //vendido
                             else
                             {
-                                
+
                                 if(tickets[i]['box']['returned'].length)
                                 {
                                     temp_box[tickets[i]['employee_id']].returned_plus_ordered++;
@@ -1944,7 +1978,7 @@ exports.GetBox = function (req, res, next)
 
                                 temp_box[tickets[i]['employee_id']].total += tickets[i]['overview']['total'];
                                 summary.total += tickets[i]['overview']['total'];
-                                
+
                                 if(tickets[i]['overview']['payment_method'] == 'cash')
                                 {
                                     temp_box[tickets[i]['employee_id']].total_cash += tickets[i]['overview']['total'];
@@ -1965,7 +1999,7 @@ exports.GetBox = function (req, res, next)
 
                             temp_box[tickets[i]['employee_id']].total += tickets[i]['overview']['total'];
                             summary.total += tickets[i]['overview']['total'];
-                            
+
                             if(tickets[i]['overview']['payment_method'] == 'cash')
                             {
                                 temp_box[tickets[i]['employee_id']].total_cash += tickets[i]['overview']['total'];
@@ -1976,8 +2010,8 @@ exports.GetBox = function (req, res, next)
                                 temp_box[tickets[i]['employee_id']].total_credit += tickets[i]['overview']['total'];
                                 summary.total_credit += tickets[i]['overview']['total'];
                             }
-                        } 
-                        */               
+                        }
+                        */
                     }
                     else if(tickets[i]['status'] == 'DEVUELTO')
                     {
@@ -2027,9 +2061,9 @@ exports.GetBox = function (req, res, next)
 
                 //PRINTING PDF AND
 
-                //res.send({box:box,total:summary.total}); 
-                res.send({box:box,total:summary.total_cash+summary.total_rcash}); 
-                
+                //res.send({box:box,total:summary.total});
+                res.send({box:box,total:summary.total_cash+summary.total_rcash});
+
             });
 
         });
@@ -2048,10 +2082,10 @@ exports.Backup = function (req, res, next)
             args = ['--db', 'kalzate'],
             mongodump = spawn('/usr/bin/mongodump', args)
             ;
-        
+
         /*
         mongodump.stdout.on('data', function (data) {
-          
+
             console.log('stdout: ' + data);
 
             //res.attachment('backup.data');
@@ -2060,33 +2094,33 @@ exports.Backup = function (req, res, next)
         });
         */
 
-        mongodump.stderr.on('data', function (data) 
+        mongodump.stderr.on('data', function (data)
         {
-            
+
             res.send(404);
 
         });
 
-        
-        mongodump.on('close', function (code) 
+
+        mongodump.on('close', function (code)
         {
             var archiver = require('archiver'),
                 moment = require('moment'),
                 filename = 'kalzate_'+(moment().format('DD_MM_YYYY'))+'.zip',
-                path = __dirname+'/../../../client/app/db_backup/'+filename,
+                path = __dirname+'/../../client/app/db_backup/'+filename,
                 output = fs.createWriteStream(path),
                 archive = archiver('zip');
 
             output.on('close', function() {
-            
+
                 //console.log('archiver has been finalized and the output file descriptor has closed.');
                 //res.attachment('backup.zip');
                 //res.setHeader('Content-Type', 'application/zip');
-                res.sendfile(filename, {'root': __dirname+'/../../../client/app/db_backup/'});
+                res.sendfile(filename, {'root': __dirname+'/../../client/app/db_backup/'});
             });
 
             archive.on('error', function(err) {
-            
+
                 res.send(404);
             });
 
@@ -2100,17 +2134,17 @@ exports.Backup = function (req, res, next)
             .append(fs.createReadStream(__dirname + '/../../dump/kalzate/users.bson'), { name: 'users.bson' })
             .append(fs.createReadStream(__dirname + '/../../dump/kalzate/users.metadata.json'), { name: 'users.metadata.json' })
             ;
-            
+
             archive.finalize(function (err, bytes) {
-                
-                if (err) 
+
+                if (err)
                 {
                     res.send(404);
                 }
             });
-            
+
         });
-        
+
     }
     else
     {
@@ -2123,9 +2157,9 @@ exports.ValidateVoucher = function (req, res, next)
     if(req.user && req.user.role == 'employee')
     {
         ticketsDB
-        .findOne(req.body, {overview:1, date_end:1}, function (err, ticket){        
-            
-            if (err || !ticket || !ticket.overview['voucher']) 
+        .findOne(req.body, {overview:1, date_end:1}, function (err, ticket){
+
+            if (err || !ticket || !ticket.overview['voucher'])
             {
                 return res.send(404);
             }
@@ -2159,7 +2193,7 @@ exports.UtilsShutdown = function (req, res, next)
         var sys = require('sys'),
             exec = require('child_process').exec
             ;
-        
+
         exec('shutdown -h now', function (error, stdout, stderr) { sys.puts(stdout); res.send(true); });
     }
     else

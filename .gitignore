@@ -4,3 +4,6 @@ client/node_modules
 client/app/barcodes
 client/app/uploaded
 client/app/db_backup
+root
+.idea
+node-printer-bin

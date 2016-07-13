@@ -1,2 +1,0 @@
-@reboot /var/www/kalzate/server/server.bash
-10 22 * * * kalzate /var/www/kalzate/server/backup.bash

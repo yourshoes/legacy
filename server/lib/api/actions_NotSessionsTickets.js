@@ -17,11 +17,11 @@ require('../auth/conf');
 |--------------------------------------------------------------------------
 */
 
-var roles = require('../../../client/app/js/config').userRoles;
+var roles = require('../../client/app/js/config').userRoles;
 
 exports.index = function (req, res)
 {
-    fs.readFile(__dirname + '/../../../client/app/index.html', 'utf8', function(err, text){
+    fs.readFile(__dirname + '/../../client/app/index.html', 'utf8', function(err, text){
         
         res.send(text);
     });
@@ -329,7 +329,7 @@ exports.upload = function(req, res, next)
             , decodedImage = new Buffer(data, 'base64')//decodedImage = new Buffer(matches[2], 'base64')
             , name = (new Date().getTime()).toString(36)+'_'+img['name']
             , relative = '/static/uploaded/'+name
-            , absolute = __dirname + '/../../../client/app/uploaded/'+name
+            , absolute = __dirname + '/../../client/app/uploaded/'+name
             ;
 
             //var data = img['data'].substr(img['data'].indexOf('base64') + 7);
@@ -356,7 +356,7 @@ exports.upload = function(req, res, next)
     if(req.user && req.user.role == 'employee')
     {
         var relative = req.body.replace("static/uploaded/","")
-            , absolute = __dirname + '/../../../client/app/uploaded/'+relative
+            , absolute = __dirname + '/../../client/app/uploaded/'+relative
             ;
 
             //var data = img['data'].substr(img['data'].indexOf('base64') + 7);
@@ -416,7 +416,7 @@ exports.ExportShoesPdf = function(req, res, next)
     {
         /*
 var fs = require('fs')
-            ,path = __dirname + '/../../../client/app/barcodes/'
+            ,path = __dirname + '/../../client/app/barcodes/'
             ;
 
         if(fs.existsSync(path+'zapatos_barcodes.pdf'))
@@ -434,7 +434,7 @@ var fs = require('fs')
 
             var PDFDoc = require('pdfkit')
                 ,doc = new PDFDoc({size:'A4', info:{title:'Kalzate Barcodes', author: 'Zurisadai'}})
-                , path = __dirname + '/../../../client/app/barcodes/'
+                , path = __dirname + '/../../client/app/barcodes/'
                 ,barc = new (require('barc'))({fontsize:'16px'})
                 ,x = 9
                 ,y = 17
@@ -714,7 +714,7 @@ exports.getBarCode = function (req, res, next)
     {
         var bc = req.body['barcode']
             ,fs = require('fs')
-            ,path = __dirname + '/../../../client/app/barcodes/'+bc+'.png'
+            ,path = __dirname + '/../../client/app/barcodes/'+bc+'.png'
             ,barc = new (require('barc'))({fontsize:'16px'})
             ,buf = barc.code128(bc, 210, 110)
             ;
@@ -1845,7 +1845,7 @@ exports.Backup = function (req, res, next)
             var archiver = require('archiver'),
                 moment = require('moment'),
                 filename = 'kalzate_'+(moment().format('DD_MM_YYYY'))+'.zip',
-                path = __dirname+'/../../../client/app/db_backup/'+filename,
+                path = __dirname+'/../../client/app/db_backup/'+filename,
                 output = fs.createWriteStream(path),
                 archive = archiver('zip');
 
@@ -1854,7 +1854,7 @@ exports.Backup = function (req, res, next)
                 //console.log('archiver has been finalized and the output file descriptor has closed.');
                 //res.attachment('backup.zip');
                 //res.setHeader('Content-Type', 'application/zip');
-                res.sendfile(filename, {'root': __dirname+'/../../../client/app/db_backup/'});
+                res.sendfile(filename, {'root': __dirname+'/../../client/app/db_backup/'});
             });
 
             archive.on('error', function(err) {

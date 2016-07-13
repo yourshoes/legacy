@@ -1,0 +1,1 @@
+cmd_Release/obj.target/node_printer.node := g++ -shared -pthread -rdynamic -m64 -lcups  -Wl,-soname=node_printer.node -o Release/obj.target/node_printer.node -Wl,--start-group Release/obj.target/node_printer/src/node_printer.o Release/obj.target/node_printer/src/node_printer_posix.o -Wl,--end-group -lcups

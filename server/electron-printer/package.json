@@ -1,0 +1,110 @@
+{
+  "_args": [
+    [
+      "electron-printer@*",
+      "/Users/zpabon/projects/github/printer-example"
+    ]
+  ],
+  "_from": "electron-printer@*",
+  "_id": "electron-printer@0.0.5",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/electron-printer",
+  "_nodeVersion": "5.1.1",
+  "_npmOperationalInternal": {
+    "host": "packages-9-west.internal.npmjs.com",
+    "tmp": "tmp/electron-printer-0.0.5.tgz_1455519650281_0.14673972222954035"
+  },
+  "_npmUser": {
+    "email": "marco.piraccini@gmail.com",
+    "name": "marcopiraccini"
+  },
+  "_npmVersion": "3.3.12",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "electron-printer",
+    "raw": "electron-printer@*",
+    "rawSpec": "*",
+    "scope": null,
+    "spec": "*",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/electron-printer/-/electron-printer-0.0.5.tgz",
+  "_shasum": "2b43681e8d0b58d2b2800113dcb1a0e9fda7a4f3",
+  "_shrinkwrap": null,
+  "_spec": "electron-printer@*",
+  "_where": "/Users/zpabon/projects/github/printer-example",
+  "author": {
+    "email": "marco.piraccini@gmail.com",
+    "name": "Marco Piraccini"
+  },
+  "binary": {
+    "host": "https://github.com/marcopiraccini/electron-printer/releases/download/0.0.5",
+    "module_name": "node_printer",
+    "module_path": "./build/{configuration}/electron-v0.36-{platform}-{arch}/",
+    "package_name": "electron-v0.36-{platform}-{arch}.tar.gz"
+  },
+  "bugs": {
+    "url": "https://github.com/marcopiraccini/electron-printer/issues"
+  },
+  "bundleDependencies": [
+    "node-pre-gyp"
+  ],
+  "contributors": [
+    {
+      "name": "Name Lastname",
+      "email": "email@server.com"
+    }
+  ],
+  "dependencies": {
+    "nan": "^2.1.0",
+    "node-pre-gyp": "^0.6.13",
+    "node-pre-gyp-github": "^1.1.2"
+  },
+  "description": "Node.js printer bindings -  electron builds",
+  "devDependencies": {
+    "nodeunit": "*"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "2b43681e8d0b58d2b2800113dcb1a0e9fda7a4f3",
+    "tarball": "https://registry.npmjs.org/electron-printer/-/electron-printer-0.0.5.tgz"
+  },
+  "engines": {
+    "electron": ">=0.36"
+  },
+  "gitHead": "fd60dbe682e9090da29b40d42fd45ba331631a6e",
+  "homepage": "https://github.com/marcopiraccini/electron-printer",
+  "licenses": [
+    {
+      "type": "BSD"
+    }
+  ],
+  "main": "./index",
+  "maintainers": [
+    {
+      "name": "marcopiraccini",
+      "email": "marco.piraccini@gmail.com"
+    }
+  ],
+  "name": "electron-printer",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/marcopiraccini/electron-printer.git"
+  },
+  "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build",
+    "release": "node-pre-gyp rebuild --runtime=electron --target=0.36.7 && node-pre-gyp package --runtime=electron --target=0.36.7 && node-pre-gyp-github publish --release",
+    "release-darwin": "HOME=~/.electron-gyp node-pre-gyp rebuild --target_platform=darwin --runtime=electron --target=0.36.7 --arch=x64 --dist-url=https://atom.io/download/atom-shell && node-pre-gyp package --target_platform=darwin --runtime=electron --target=0.36.7 && node-pre-gyp-github publish —release",
+    "release-linux": "node-pre-gyp rebuild --target_arch=x64 --runtime=electron --target=0.36.7 --target_platform=linux && node-pre-gyp package --target_arch=x64 --target_platform=linux --runtime=electron --target=0.36.7 && node-pre-gyp-github publish --release",
+    "release-linux-ia32": "node-pre-gyp rebuild --target_arch=ia32 --target_platform=linux --runtime=electron --target=0.36.7 && node-pre-gyp --target_arch=ia32 --target_platform=linux --runtime=electron --target=0.36.7 package && node-pre-gyp-github publish --release",
+    "release-win": "node-pre-gyp rebuild --target_arch=x64 --target_platform=win32 --runtime=electron --target=0.36.7 && node-pre-gyp package --target_arch=x64 --target_platform=win32 --runtime=electron --target=0.36.7 && node-pre-gyp-github publish --release",
+    "release-win-ia32": "node-pre-gyp rebuild --target_arch=ia32 --target_platform=win32 --runtime=electron --target=0.36.7 && node-pre-gyp package --target_arch=ia32 --target_platform=win32 --runtime=electron --target=0.36.7 && node-pre-gyp-github publish --release"
+  },
+  "version": "0.0.5"
+}
