@@ -1,7 +1,6 @@
 (function(exports){
 
-    const webFrame = require('electron').webFrame;
-    webFrame.setZoomFactor(1.5);
+    require('electron').webFrame.setZoomFactor(1.2);
 
     var config = {
 
@@ -109,29 +108,29 @@ angular
 
     //Redirection
     //$urlRouterProvider.when('/shoes', '/shoes/page/1');
-    
+
     $stateProvider
     .state('index', {
       url: "/",
-      templateUrl: '/static/partials/home.html', 
+      templateUrl: '/static/partials/home.html',
       access: access.employee
     })
     .state('login', {
       url: "/login",
-      templateUrl: '/static/partials/login.html', 
-      controller: 'LoginCtrl', 
+      templateUrl: '/static/partials/login.html',
+      controller: 'LoginCtrl',
       access: access.anon
     })
     .state('register', {
       url: "/register",
-      templateUrl: '/static/partials/register.html', 
-      controller: 'RegisterCtrl', 
+      templateUrl: '/static/partials/register.html',
+      controller: 'RegisterCtrl',
       access: access.anon
     })
     .state('recover', {
       url: "/recover",
-      templateUrl: '/static/partials/recover.html', 
-      controller: 'RecoverCtrl', 
+      templateUrl: '/static/partials/recover.html',
+      controller: 'RecoverCtrl',
       access: access.anon
     })
     .state('shoes', {
@@ -176,7 +175,7 @@ angular
       }]},
       templateUrl: '/static/partials/tickets.html',
       controller: 'TicketsCtrl',
-      onExit: ['emit', function (emit) 
+      onExit: ['emit', function (emit)
       {
         //console.log('onExit!', emit);
 
@@ -206,7 +205,7 @@ angular
             $scope.changingQty = false;
             $scope.ticketPM = 'cash';
             $scope.processingTicket = false;
-            
+
 
             $scope.shoes.reset();
             $scope.complements.reset();
@@ -215,7 +214,7 @@ angular
         }
       },
       onExit: function(newTicket){
-        
+
         console.log('saliendo');
 
         newTicket();
@@ -237,13 +236,13 @@ angular
     */
     /*.state('stock.page', {
       url: "stock/page/:pageNo",
-      templateUrl: '//localhost:3000//static/partials/stock.page.html', 
-      controller: 'StockPageCtrl', 
+      templateUrl: '//localhost:3000//static/partials/stock.page.html',
+      controller: 'StockPageCtrl',
       access: access.employee
     })*/
     .state('error', {
       url: "/404",
-      templateUrl: '/static/partials/404.html', 
+      templateUrl: '/static/partials/404.html',
       access: access.public
     });
 
@@ -258,15 +257,15 @@ angular
 
     var interceptor = ['$location', '$q', function ($location, $q)
     {
-        
-        function success(response) 
+
+        function success(response)
         {
             return response;
         }
 
-        function error(response) 
+        function error(response)
         {
-            if(response.status === 401) 
+            if(response.status === 401)
             {
                 $location.path('/login');
             }
@@ -274,7 +273,7 @@ angular
             return $q.reject(response);
         }
 
-        return function(promise) 
+        return function(promise)
         {
             return promise.then(success, error);
         }
@@ -286,27 +285,27 @@ angular
 .run(['$rootScope', '$location', 'Auth', function ($rootScope, $location, Auth){
 
     $rootScope.$on("$stateChangeStart", function (event, toState, toParams, fromState, fromParams){
-        
+
         $rootScope.error = null;
 
         //console.log('toState', toState);
         //If client is not authorize to visit the "next" url, check if logged in
         //access variable in next.access is given by the $routeProvider.when({...access:});
-        if(!Auth.authorize(toState.access)) 
-        {  
+        if(!Auth.authorize(toState.access))
+        {
             if(!Auth.isLoggedIn())
             {
                 //Keep track of the current path to redirect then to it
                 $rootScope.transition = $location.path();
                 $location.path('/login');
-            } 
+            }
             //If user is already logged in and try to enter to login page
            else
            {
                 $location.path('/');
                 //console.log('El path:',$location.path());
            }
-           
+
            event.preventDefault();
         }
 
@@ -330,7 +329,7 @@ kzServices
 
     //$cookieStore.remove('kz-user');
 
-    function changeUser(user) 
+    function changeUser(user)
     {
         angular.extend(currentUser, user);
         //console.log(currentUser);
@@ -340,13 +339,13 @@ kzServices
     return {
 
         authorize: function (accessLevel, role)
-        { 
+        {
             role = role || currentUser.role;
 
             return accessLevel.bitMask & role.bitMask;
         },
 
-        isLoggedIn: function (user) 
+        isLoggedIn: function (user)
         {
             user = user || currentUser;
 
@@ -354,11 +353,11 @@ kzServices
             return user.role.title == userRoles.employee.title || user.role.title == userRoles.admin.title;
         },
 
-        register: function (user, success, error) 
+        register: function (user, success, error)
         {
             $http
             .post('/api/register', user)
-            .success(function (res) 
+            .success(function (res)
             {
                 changeUser(res);
                 success();
@@ -366,10 +365,10 @@ kzServices
             .error(error);
         },
 
-        login: function (user, success, error) 
+        login: function (user, success, error)
         {
             //console.log(user);
-            
+
             $http
             .post('/api/login', user)
             .success(function (user)
@@ -383,7 +382,7 @@ kzServices
             success(user);*/
         },
 
-        logout: function (success, error) 
+        logout: function (success, error)
         {
             $http
             .post('/api/logout')
@@ -399,7 +398,7 @@ kzServices
             .error(error);
         },
 
-        setUserName: function (username) 
+        setUserName: function (username)
         {
             var before = currentUser.username;
             changeUser(username);
@@ -497,8 +496,8 @@ kzServices
         {
             if(colorList[i].color == color)
             {
-                return colorList[i].code; 
-            }   
+                return colorList[i].code;
+            }
         }
     };
 
@@ -682,9 +681,9 @@ kzServices
     }
 
 
-    return { 
+    return {
 
-        csv2json: function (text, lineEnding, delimiter, ignoreEmptyLines) 
+        csv2json: function (text, lineEnding, delimiter, ignoreEmptyLines)
         {
             var config = {
                 lineEnding:       /[\r\n]/,
@@ -737,28 +736,28 @@ kzServices
             return objects;
         },
 
-        json2csv: function (objArray) 
+        json2csv: function (objArray)
         {
             var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
 
             var str = '';
             var line = '';
 
-            if ($("#labels").is(':checked')) 
+            if ($("#labels").is(':checked'))
             {
                 var head = array[0];
-                if ($("#quote").is(':checked')) 
+                if ($("#quote").is(':checked'))
                 {
-                    for (var index in array[0]) 
+                    for (var index in array[0])
                     {
                         var value = index + "";
                         line += '"' + value.replace(/"/g, '""') + '",';
                     }
 
-                } 
-                else 
+                }
+                else
                 {
-                    for (var index in array[0]) 
+                    for (var index in array[0])
                     {
                         line += index + ',';
                     }
@@ -768,21 +767,21 @@ kzServices
                 str += line + '\r\n';
             }
 
-            for (var i = 0; i < array.length; i++) 
+            for (var i = 0; i < array.length; i++)
             {
                 var line = '';
 
-                if ($("#quote").is(':checked')) 
+                if ($("#quote").is(':checked'))
                 {
-                    for (var index in array[i]) 
+                    for (var index in array[i])
                     {
                         var value = array[i][index] + "";
                         line += '"' + value.replace(/"/g, '""') + '",';
                     }
-                } 
-                else 
+                }
+                else
                 {
-                    for (var index in array[i]) 
+                    for (var index in array[i])
                     {
                         line += array[i][index] + ',';
                     }
@@ -792,25 +791,25 @@ kzServices
                 str += line + '\r\n';
             }
 
-            return str; 
+            return str;
         }/*,
 
-        json2table : function (json) 
+        json2table : function (json)
         {
 
             var headerCount = new Object(),
                 table = ''
                 ;
 
-            if (json.length > 0) 
+            if (json.length > 0)
             {
                 var item, index = 0, i, j;
 
                 table = '<table class="table text-center"><thead><tr><th class="text-center">Nº</th>';
 
-                for (item in json[0]) 
+                for (item in json[0])
                 {
-                   if (!headerCount.hasOwnProperty(item)) 
+                   if (!headerCount.hasOwnProperty(item))
                    {
                        table += '<th class="text-center">'+ item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()+'</th>';
                        headerCount[item] = index;
@@ -820,14 +819,14 @@ kzServices
 
                 table += '</tr></thead><tbody>';
 
-                for (i = 0; i < json.length; i++) 
+                for (i = 0; i < json.length; i++)
                 {
                     var row = '<tr><td>'+(i+1)+'</td>';
 
-                    for (j in json[i]) 
+                    for (j in json[i])
                     {
                         row += '<td>'+json[i][j]+'</td>';
-               
+
                     }
 
                     table += row + '</tr>';
@@ -877,10 +876,10 @@ kzServices
 /*
 kzServices
 .factory('Users', function ($http) {
-    
+
     return {
-        
-        getAll: function (success, error) 
+
+        getAll: function (success, error)
         {
             $http.get('/users')
             .success(success)
@@ -897,9 +896,9 @@ angular.module('kapp.services', []).
 */;/* Controllers */
 
 angular.module('kalzate.controllers', [])
-.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$window', 'Auth', 
-	
-	function ($rootScope, $scope, $location, $window, Auth) 
+.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$window', 'Auth',
+
+	function ($rootScope, $scope, $location, $window, Auth)
 	{
     	$scope.error = false;
     	$scope.login = function() {
@@ -921,14 +920,14 @@ angular.module('kalzate.controllers', [])
     	};
 	}
 ])
-.controller('RegisterCtrl', ['$scope', '$location', 'Auth', 
-    
-    function ($scope, $location, Auth) 
+.controller('RegisterCtrl', ['$scope', '$location', 'Auth',
+
+    function ($scope, $location, Auth)
     {
         $scope.serverError = false;
 
         $scope.register = function() {
-        
+
             Auth.register({
                 username: $scope.username,
                 email: $scope.email,
@@ -943,19 +942,19 @@ angular.module('kalzate.controllers', [])
          };
     }
 ])
-.controller('RecoverCtrl', ['$scope', '$http', 
-    
-    function ($scope, $http) 
+.controller('RecoverCtrl', ['$scope', '$http',
+
+    function ($scope, $http)
     {
         $scope.serverNotice = {visible:false, code:-1};
 
         $scope.recover = function() {
-        
+
             $scope.serverNotice.visible = false;
 
             $http
             .post('/api/recover',{email: $scope.email})
-            .success(function (response) 
+            .success(function (response)
             {
                 //console.log(shoes);
                 $scope.serverNotice.code = 0;
@@ -971,15 +970,15 @@ angular.module('kalzate.controllers', [])
     }
 ])
 .controller('FooterCtrl', ['$http', '$scope', '$location', 'Auth', '$modal', function ($http, $scope, $location, Auth, $modal) {
-    
+
     $scope.user = Auth.user;
     //$scope.userRoles = Auth.userRoles;
     //$scope.accessLevels = Auth.accessLevels;
     $scope.shutdown = function() {
-        
+
         $http
         .post('/api/utils/shutdown')
-        .success(function (response) 
+        .success(function (response)
         {
             //console.log('Apagando');
             delete localStorage.sessTickets;
@@ -1006,7 +1005,7 @@ angular.module('kalzate.controllers', [])
     $scope.openEdit = function()
     {
         var modalInstance = $modal.open({
-          
+
           templateUrl: 'ModalEditUser.html',
           controller: 'ModalEditUserCtrl',
           backdrop: 'static',
@@ -1025,17 +1024,17 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('ModalEditUserCtrl', ['$scope', '$http', '$modalInstance', function ($scope, $http, $modalInstance) {
-    
+
 
     $scope.error=false;
 
-    $scope.edit = function () 
+    $scope.edit = function ()
     {
         $scope.error=false;
 
         $http
         .post('/api/user/edit',{username: $scope.username, password: $scope.password})
-        .success(function (response) 
+        .success(function (response)
         {
             //console.log(shoes);
             $scope.error=false;
@@ -1045,7 +1044,7 @@ angular.module('kalzate.controllers', [])
 
             $scope.error=true;
         });
-        
+
     };
 
     $scope.cancel = function () {
@@ -1055,7 +1054,7 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('NavCtrl', ['$scope', '$window', function ($scope, $window) {
-    
+
     $scope.navCollapsed = false;
 
     $scope.toTickets = function()
@@ -1074,14 +1073,14 @@ angular.module('kalzate.controllers', [])
 }])
 /*
 .controller('PaginationCtrl', ['$scope', function ($scope) {
-    
+
     $scope.totalItems = 664;
     $scope.currentPage = 1;
     $scope.maxSize = 5;
     $scope.itemsPerPage = 10;
 
     $scope.setPage = function (page) {
-        
+
         console.log('page is '+page)
     };
 
@@ -1100,7 +1099,7 @@ angular.module('kalzate.controllers', [])
         currentPage     : 1,//pageNo,
         maxSize         : 5,
         itemsPerPage    : parseInt(localStorage['kz-stock-ipp']) || 10,
-        setPage         : function (page) 
+        setPage         : function (page)
         {
             //console.log('page is '+page)
             //$location.path('/shoes/page/'+page);
@@ -1126,7 +1125,7 @@ angular.module('kalzate.controllers', [])
 
             $http
             .post('/api/shoes',{search: $scope.searching, order: $scope.order, offset:offset, limit:limit})
-            .success(function (shoes) 
+            .success(function (shoes)
             {
                 //console.log(shoes);
                 $scope.pagination['totalItems'] = shoes.count;
@@ -1144,11 +1143,11 @@ angular.module('kalzate.controllers', [])
         {
             var page = 1;
 
-            if( $scope.query.reference == '' && 
-                $scope.query.brand == '' && 
+            if( $scope.query.reference == '' &&
+                $scope.query.brand == '' &&
                 $scope.query.size == '' &&
-                $scope.query.reference == '' && 
-                $scope.query.category == '' && 
+                $scope.query.reference == '' &&
+                $scope.query.category == '' &&
                 $scope.query.color == '')
             {
                 $scope.searching = false
@@ -1193,7 +1192,7 @@ angular.module('kalzate.controllers', [])
                 }
 
                 searchingPage = $scope.pagination.currentPage;
-            }    
+            }
 
             $scope.pagination.setPage(page);
         },
@@ -1214,7 +1213,7 @@ angular.module('kalzate.controllers', [])
     //Tiene la desventaja de que si añadimos uno nuevo tenemos que refrescar par que aparezca, pero solo hace una request!
     $scope.references = [];
     $http.post('/api/shoes/fields',{field:'reference'})
-    .success(function (response) 
+    .success(function (response)
     {
         //console.log(response);
         $scope.references = response;
@@ -1225,7 +1224,7 @@ angular.module('kalzate.controllers', [])
     $scope.references = function(code)
     {
         return $http.post('/api/shoes/references',{ref:code})
-        .then(function (response) 
+        .then(function (response)
         {
             return response.data;
         });
@@ -1253,7 +1252,7 @@ angular.module('kalzate.controllers', [])
         {
             var empty = false;
 
-            for(var key in $scope.query) 
+            for(var key in $scope.query)
             {
                 if(key != t && $scope.query[key] != '')
                 {
@@ -1273,11 +1272,11 @@ angular.module('kalzate.controllers', [])
             }
         }
         /*
-        if( $scope.query.reference == '' && 
-            $scope.query.brand == '' && 
+        if( $scope.query.reference == '' &&
+            $scope.query.brand == '' &&
             $scope.query.size == '' &&
-            $scope.query.reference == '' && 
-            $scope.query.category == '' && 
+            $scope.query.reference == '' &&
+            $scope.query.category == '' &&
             $scope.query.color == '' &&
             $scope.searching)
         {
@@ -1319,7 +1318,7 @@ angular.module('kalzate.controllers', [])
     $scope.removeShoe = function(id)
     {
          $http.post('/api/shoes/remove',{id:id})
-        .success(function (references) 
+        .success(function (references)
         {
             //$scope.references = references;
             $scope.pagination.setPage($scope.pagination.currentPage);
@@ -1333,9 +1332,9 @@ angular.module('kalzate.controllers', [])
 
     $scope.barCode = function(barcode)
     {
-        
+
         $modal.open({
-          
+
           templateUrl: 'ModalBCShoes.html',
           controller: 'ModalBCShoesCtrl',
           backdrop: 'static',
@@ -1351,7 +1350,7 @@ angular.module('kalzate.controllers', [])
     $scope.qrCode = function(id, has_qr, index)
     {
         var modalInstance = $modal.open({
-          
+
           templateUrl: 'ModalQRShoes.html',
           controller: 'ModalQRShoesCtrl',
           backdrop: 'static',
@@ -1373,7 +1372,7 @@ angular.module('kalzate.controllers', [])
     $scope.openPrint = function()
     {
         var modalInstance = $modal.open({
-          
+
           templateUrl: 'ModalPrintShoes.html',
           controller: 'ModalPrintShoesCtrl',
           backdrop: 'static',
@@ -1395,7 +1394,7 @@ angular.module('kalzate.controllers', [])
     $scope.openImport = function () {
 
         var modalInstance = $modal.open({
-          
+
           templateUrl: 'ModalImportShoes.html',
           controller: 'ModalImportShoesCtrl',
           backdrop: 'static',
@@ -1415,11 +1414,11 @@ angular.module('kalzate.controllers', [])
                 $scope.items = $scope.items.concat(data.items).slice(0, $scope.pagination['itemsPerPage']);
                 $scope.pagination['totalItems'] += data.count;
             }
-            
+
             $scope.items_modified = true;
             */
             $http.post('/api/shoes/fields',{field:'reference'})
-            .success(function (response) 
+            .success(function (response)
             {
                 //console.log(response);
                 $scope.references = response;
@@ -1427,12 +1426,12 @@ angular.module('kalzate.controllers', [])
 
                 $scope.pagination.setPage(1);
             });
-            
+
         });
 
     };
 
-    
+
         /*
         return $http.jsonp("http://gd.geobytes.com/AutoCompleteCity?callback=JSON_CALLBACK &filter=US&q="+code)
         .then(function(response){
@@ -1445,16 +1444,16 @@ angular.module('kalzate.controllers', [])
 
         $http
         .get('/api/shoes/export/csv')
-        .success(function (csv) 
+        .success(function (csv)
         {
             var blob = new Blob([ csv ], { type : 'text/csv' });
             var url = (window.URL || window.webkitURL).createObjectURL( blob );
             var link = document.createElement('a');
-              
+
             angular.element(link)
             .attr('href', url)
             .attr('download', 'zapatos.csv') // Pretty much only works in chrome
-            
+
             link.click();
         })
         .error(function (err){
@@ -1465,17 +1464,17 @@ angular.module('kalzate.controllers', [])
     */
     if($location.path().indexOf('page') == -1)
         $scope.pagination.getItems(0,$scope.pagination['itemsPerPage']);
-    
+
 }])
 .controller('ModalImportShoesCtrl', ['$scope', '$http', 'Converter', '$modalInstance', function ($scope, $http, Converter, $modalInstance) {
-    
+
     $scope.files = [];
     $scope.fileError = {code:0, msg:'', visible:false};
     $scope.progress = false;
     $scope.displayCSV = false;
     $scope.remove = false;
 
-    $scope.ok = function () 
+    $scope.ok = function ()
     {
         $scope.progress = true;
 
@@ -1493,7 +1492,7 @@ angular.module('kalzate.controllers', [])
         //$modalInstance.close({count:items.length, items:items, remove: $scope.remove});
         $http
         .post('/api/shoes/import', {items:items,remove:$scope.remove})
-        .success(function () 
+        .success(function ()
         {
             //$modalInstance.close({count:items.length, items:items.reverse(), remove: $scope.remove});
             $modalInstance.close();
@@ -1522,9 +1521,9 @@ angular.module('kalzate.controllers', [])
 
             if(!$scope.files.length)
             {
-               $scope.displayCSV = false; 
+               $scope.displayCSV = false;
             }
-            
+
         }
     };
 
@@ -1537,7 +1536,7 @@ angular.module('kalzate.controllers', [])
                 if($scope.files[i]['name'] == file['name'])
                 {
                     return;
-                }   
+                }
             }
 
             file['data'] = Converter.csv2json(file['data']);
@@ -1569,7 +1568,7 @@ angular.module('kalzate.controllers', [])
     };
 
     /*
-    DOWNLOAD A CSV 
+    DOWNLOAD A CSV
 
     var json = $.parseJSON($("#json").val());
     var csv = Converter.json2csv(json);
@@ -1579,7 +1578,7 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('ModalPrintShoesCtrl', ['$scope', '$http', '$modalInstance', 'modified', function ($scope, $http, $modalInstance, modified) {
-    
+
     $scope.progress = true;
     $scope.error = false;
 
@@ -1588,7 +1587,7 @@ angular.module('kalzate.controllers', [])
     {
         $http
         .get('/api/shoes/export/pdf')
-        .success(function (data) 
+        .success(function (data)
         {
             /*if(!data['cache'])
             {
@@ -1597,7 +1596,7 @@ angular.module('kalzate.controllers', [])
                 $scope.pdf = '/static/barcodes/zapatos_barcodes.pdf';
                 $scope.progress = false
 
-                }, 8000);  
+                }, 8000);
             }
             else
             {
@@ -1620,7 +1619,7 @@ angular.module('kalzate.controllers', [])
         $scope.pdf = '/static/barcodes/zapatos_barcodes.pdf';
         $scope.progress = false
     }
-    
+
 
     $scope.ok = function()
     {
@@ -1629,14 +1628,14 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('ModalQRShoesCtrl', ['$scope', '$http', '$modalInstance', 'info', function ($scope, $http, $modalInstance, info) {
-    
+
     $scope.progress = true;
     $scope.error = false;
     $scope.qr = '';
 
     $http
     .post('/api/shoes/qr', info)
-    .success(function (dataURL) 
+    .success(function (dataURL)
     {
        $scope.qr = dataURL['qr'];
        $scope.progress = false;
@@ -1667,7 +1666,7 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('ModalBCShoesCtrl', ['$scope', '$http', '$modalInstance', 'barcode', function ($scope, $http, $modalInstance, barcode) {
-    
+
     $scope.progress = true;
     $scope.error = false;
     $scope.barcode = '/static/barcodes/'+barcode+'.png';
@@ -1676,7 +1675,7 @@ angular.module('kalzate.controllers', [])
     {
         $http
         .post('/api/shoes/barcode', {barcode:barcode})
-        .success(function (dataURL) 
+        .success(function (dataURL)
         {
            $scope.barcode = dataURL;
            $scope.progress = false;
@@ -1711,7 +1710,7 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('ShoesPageCtrl', ['$scope','$stateParams', '$http', function ($scope, $stateParams, $http) {
-    
+
     var pageNo = $stateParams.pageNo || 1;
 
     $scope.pagination.currentPage = pageNo;
@@ -1723,27 +1722,27 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('OnemoreShoeCtrl', ['$scope', '$http', function ($scope, $http) {
-    
+
     $scope.color = '';
     $scope.category = 'MUJERES';
     //    'Negro','Blanco','Azúl', 'Verde', 'Rojo', 'Amarillo', 'Violeta', 'Marrón', 'Beige'];
     $scope.addShoe = function()
     {
-        
+
         var item = {
 
-                reference: $scope.reference.toUpperCase(), 
-                brand: $scope.brand.toUpperCase(), 
+                reference: $scope.reference.toUpperCase(),
+                brand: $scope.brand.toUpperCase(),
                 category: $scope.category,
-                size: $scope.size, 
-                color: ($scope.color['color'] ? $scope.color['color'] : $scope.color), 
+                size: $scope.size,
+                color: ($scope.color['color'] ? $scope.color['color'] : $scope.color),
                 price: $scope.price,
                 quantity: $scope.quantity
         };
 
         $http
         .post('/api/shoes/add', item)
-        .success(function (response) 
+        .success(function (response)
         {
             if(response)
             {
@@ -1770,8 +1769,8 @@ angular.module('kalzate.controllers', [])
                 // $scope.reference = '';
                 // $scope.brand = '';
                 // $scope.category = 'MUJERES';
-                // $scope.size = ''; 
-                // $scope.color = ''; 
+                // $scope.size = '';
+                // $scope.color = '';
                 // $scope.price = '';
                 // $scope.quantity = '';
 
@@ -1785,7 +1784,7 @@ angular.module('kalzate.controllers', [])
         .error(function (err){
 
             alert('Oh No!, un error detectado consulta al administrador con este codigo: '+err);
-        
+
         });
     };
 
@@ -1794,18 +1793,18 @@ angular.module('kalzate.controllers', [])
         $scope.reference = '';
         $scope.brand = '';
         $scope.category = 'MUJERES';
-        $scope.size = ''; 
-        $scope.color = ''; 
+        $scope.size = '';
+        $scope.color = '';
         $scope.price = '';
         $scope.quantity = '';
     }
 
 }])
 .controller('SearchShoeCtrl', ['$scope', '$http', function ($scope, $http) {
-    
+
     $scope.brands = [];
     $http.post('/api/shoes/fields',{field:'brand'})
-    .success(function (response) 
+    .success(function (response)
     {
         //console.log(response);
         $scope.brands = response;
@@ -1830,7 +1829,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/upload', file)
-        .success(function (url) 
+        .success(function (url)
         {
             $scope.progress = false;
             //console.log(url);
@@ -1851,7 +1850,7 @@ angular.module('kalzate.controllers', [])
         $scope.images.splice(index, 1);
         /*$http
         .post('/api/photo/delete', $scope.images[index]['url'])
-        .success(function () 
+        .success(function ()
         {
             $scope.progress = false;
             $scope.images.splice(index, 1);
@@ -1877,11 +1876,11 @@ angular.module('kalzate.controllers', [])
 
         var item = {
 
-            reference: $scope.reference.toUpperCase(), 
-            brand: $scope.brand.toUpperCase(), 
+            reference: $scope.reference.toUpperCase(),
+            brand: $scope.brand.toUpperCase(),
             category: $scope.category,
-            size: $scope.size, 
-            color: $scope.color['color'], 
+            size: $scope.size,
+            color: $scope.color['color'],
             price: $scope.price,
             quantity: $scope.quantity,
             season: $scope.season,
@@ -1898,7 +1897,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/shoes/add', item)
-        .success(function (response) 
+        .success(function (response)
         {
             if(response)
             {
@@ -1920,17 +1919,17 @@ angular.module('kalzate.controllers', [])
         });
     };
 
-    $scope.safeApply = function (fn) 
+    $scope.safeApply = function (fn)
     {
       var phase = this.$root.$$phase;
-      if (phase == '$apply' || phase == '$digest') 
+      if (phase == '$apply' || phase == '$digest')
       {
-        if (fn && (typeof(fn) === 'function')) 
+        if (fn && (typeof(fn) === 'function'))
         {
           fn();
         }
-      } 
-      else 
+      }
+      else
       {
         this.$apply(fn);
       }
@@ -1940,28 +1939,28 @@ angular.module('kalzate.controllers', [])
     {
         //console.log($scope.stockForm);
         var fireOnThis = document.getElementById('stock-add-form');
-            
+
         if (Event)
         {
             fireOnThis.dispatchEvent(new Event('submit'));
         }
-        else 
+        else
         {
-            if (document.createEvent) 
+            if (document.createEvent)
             {
                 var evObj = document.createEvent('HTMLEvents');
                 evObj.initEvent('submit', true, false);
                 fireOnThis.dispatchEvent(evObj);
             }
-            else if (document.createEventObject) 
+            else if (document.createEventObject)
             { //IE
                 var evObj = document.createEventObject();
                 fireOnThis.fireEvent( 'onSubmit', evObj );
-            } 
-        }  
+            }
+        }
     };
 
-    
+
 }])
 .controller('EditShoeCtrl', ['$scope', '$http', '$location', 'Colors', 'Auth','$stateParams',
     function ($scope, $http, $location, Colors, Auth, $stateParams) {
@@ -1975,7 +1974,7 @@ angular.module('kalzate.controllers', [])
 
     $http
     .get('/api/shoes/get/'+encodeURI(ID))
-    .success(function (shoe) 
+    .success(function (shoe)
     {
         $scope.reference = shoe['reference'];
         $scope.brand = shoe['brand'];
@@ -2023,7 +2022,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/upload', file)
-        .success(function (url) 
+        .success(function (url)
         {
             $scope.progress = false;
             //console.log(url);
@@ -2058,11 +2057,11 @@ angular.module('kalzate.controllers', [])
         //console.log($scope.keywords);
         var item = {
 
-            reference: $scope.reference.toUpperCase(), 
-            brand: $scope.brand.toUpperCase(), 
+            reference: $scope.reference.toUpperCase(),
+            brand: $scope.brand.toUpperCase(),
             category: $scope.category,
-            size: $scope.size, 
-            color: $scope.color['color'], 
+            size: $scope.size,
+            color: $scope.color['color'],
             price: $scope.price,
             quantity: $scope.quantity,
             season: $scope.season,
@@ -2077,7 +2076,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/shoes/edit/'+encodeURI(ID), item)
-        .success(function (response) 
+        .success(function (response)
         {
             if(response)
             {
@@ -2099,17 +2098,17 @@ angular.module('kalzate.controllers', [])
         });
     };
 
-    $scope.safeApply = function (fn) 
+    $scope.safeApply = function (fn)
     {
       var phase = this.$root.$$phase;
-      if (phase == '$apply' || phase == '$digest') 
+      if (phase == '$apply' || phase == '$digest')
       {
-        if (fn && (typeof(fn) === 'function')) 
+        if (fn && (typeof(fn) === 'function'))
         {
           fn();
         }
-      } 
-      else 
+      }
+      else
       {
         this.$apply(fn);
       }
@@ -2119,32 +2118,32 @@ angular.module('kalzate.controllers', [])
     {
         //console.log($scope.stockForm);
         var fireOnThis = document.getElementById('shoes-edit-form');
-            
+
         if (Event)
         {
             fireOnThis.dispatchEvent(new Event('submit'));
         }
-        else 
+        else
         {
-            if (document.createEvent) 
+            if (document.createEvent)
             {
                 var evObj = document.createEvent('HTMLEvents');
                 evObj.initEvent('submit', true, false);
                 fireOnThis.dispatchEvent(evObj);
             }
-            else if (document.createEventObject) 
+            else if (document.createEventObject)
             { //IE
                 var evObj = document.createEventObject();
                 fireOnThis.fireEvent( 'onSubmit', evObj );
-            } 
-        }  
+            }
+        }
     };
-    
+
 }])
 .controller('TicketsCtrl', ['$scope', '$http', '$cookieStore', '$window', '$state', 'Colors', '$modal', '$stateParams', 'Printer',
     function ($scope, $http, $cookieStore, $window, $state, Colors, $modal, $stateParams, Printer) {
 
-    
+
     /*General*/
     /*
     $scope.colors = Colors.colorList;
@@ -2173,7 +2172,7 @@ angular.module('kalzate.controllers', [])
     $scope.setOldTicket = function(ticket, type)
     {
         $scope.oldTicketActived = type || true;
-        
+
         $scope.oldTicketInfo = {code:ticket.overview.code, total:ticket.overview.total};
         $scope.ticketTax = ticket.overview.tax;
         $scope.ticketDiscount = ticket.overview.discount;
@@ -2291,7 +2290,7 @@ angular.module('kalzate.controllers', [])
 
         if(isShoe)
         {
-            
+
             if($scope.shoes['items'][i]['quantity'] <= 0)
             {
                 return;
@@ -2302,7 +2301,7 @@ angular.module('kalzate.controllers', [])
             {
                 if($scope.products[j]['_id'] == $scope.shoes['items'][i]['_id'])
                 {
-                    
+
                     var productPromise = {
 
                         '_id':$scope.products[j]['_id'],
@@ -2312,7 +2311,7 @@ angular.module('kalzate.controllers', [])
 
                     return $http
                     .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-                    .success(function (response) 
+                    .success(function (response)
                     {
                         $scope.products[j]['qa'] = $scope.products[j]['quantity'];
                         $scope.products[j]['quantity']++;
@@ -2326,7 +2325,7 @@ angular.module('kalzate.controllers', [])
                     });
                 }
             }
-            
+
             var productPromise = {
 
                 '_id':$scope.shoes['items'][i]['_id'],
@@ -2336,9 +2335,9 @@ angular.module('kalzate.controllers', [])
 
             $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
-                
+
                 $scope.shoes['items'][i]['quantity']--;
 
                 productPromise['reference'] = $scope.shoes['items'][i]['reference'];
@@ -2348,7 +2347,7 @@ angular.module('kalzate.controllers', [])
                 productPromise['subtotal'] = $scope.shoes['items'][i]['price'];
                 productPromise['type'] = 's';
                 productPromise['shoe_qty'] = $scope.shoes['items'][i]['quantity'];
-                
+
                 $scope.products.push(productPromise);
                 $scope.applyRate();
             })
@@ -2371,7 +2370,7 @@ angular.module('kalzate.controllers', [])
                 else
                 {
                     desc += ', '+$scope.complements.color['color'];
-                }  
+                }
             }
 
             for(var j=0;j<$scope.products.length;j++)
@@ -2423,10 +2422,10 @@ angular.module('kalzate.controllers', [])
     catch(e){}*/
 
     $window.onbeforeunload = function () {
-        
+
         if($scope.ticketId)
         {
-            sessTickets = (localStorage.sessTickets || '').split(","); 
+            sessTickets = (localStorage.sessTickets || '').split(",");
             var sti = sessTickets.indexOf($scope.ticketId);
 
             if( sti > -1)
@@ -2440,7 +2439,7 @@ angular.module('kalzate.controllers', [])
                     .post('/api/ticket/new', {session:sessTickets})
                     .success(function (response){});
                 }
-                
+
             }
         }
 
@@ -2449,14 +2448,14 @@ angular.module('kalzate.controllers', [])
         {
             localStorage.boxes = boxes-1;
         }
-        
+
     };
 
     $scope.$on('removeTicketId', function(e){
 
         if($scope.ticketId)
         {
-            sessTickets = (localStorage.sessTickets || '').split(","); 
+            sessTickets = (localStorage.sessTickets || '').split(",");
             var sti = sessTickets.indexOf($scope.ticketId);
 
             if( sti > -1)
@@ -2531,20 +2530,20 @@ angular.module('kalzate.controllers', [])
         $http
         //.post('/api/ticket/new')
         .post('/api/ticket/new', {session:sessTickets})
-        .success(function (response) 
+        .success(function (response)
         {
             //console.log(response);
             $scope.ticketId = response._id;
             ticketCode = response.code;
 
-            if(!$scope.shoes['references'].length && 
+            if(!$scope.shoes['references'].length &&
                !$scope.shoes['brands'].length &&
                !$scope.tickets['codes'].length &&
                !$scope.tickets['employees'].length)
             {
 
                 $http.post('/api/ticket/getFields')
-                .success(function (response) 
+                .success(function (response)
                 {
                     $scope.shoes['references'] = response.references || [];
                     $scope.shoes['brands'] = response.brands || [];
@@ -2564,7 +2563,7 @@ angular.module('kalzate.controllers', [])
                     {
                         $scope.progress = false;
                     }
-                    
+
                 });
             }
             else
@@ -2582,18 +2581,18 @@ angular.module('kalzate.controllers', [])
                 {
                     $scope.progress = false;
                 }
-            }       
+            }
         })
         .error(function (err){
 
             console.log('error');
-            
+
             setTimeout(function(){
 
                 $scope.newTicket();
 
             },1000);
-            
+
         });
     }
 
@@ -2610,7 +2609,7 @@ angular.module('kalzate.controllers', [])
 
             if(!$scope.products.length)
             {
-                
+
                 if($scope.oldTicketActived)
                 {
                     $scope.ticketTotal = $scope.oldTicketInfo.total;
@@ -2633,7 +2632,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-        .success(function (response) 
+        .success(function (response)
         {
 
             $scope.products.splice(i,1);
@@ -2650,7 +2649,7 @@ angular.module('kalzate.controllers', [])
 
             if(!$scope.products.length)
             {
-                
+
                 if($scope.oldTicketActived)
                 {
                     $scope.ticketTotal = $scope.oldTicketInfo.total;
@@ -2658,7 +2657,7 @@ angular.module('kalzate.controllers', [])
                 }
 
                 return $scope.newTicket();
-            } 
+            }
 
             $scope.applyRate();
         })
@@ -2666,7 +2665,7 @@ angular.module('kalzate.controllers', [])
         {
             $scope.ticketNotice = {visible:true,code:3};
         });
-        
+
     }
 
     $scope.incQty = function (i,isShoe)
@@ -2695,9 +2694,9 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-        .success(function (response) 
+        .success(function (response)
         {
-            
+
             for(var j=0;j<$scope.shoes['items'].length;j++)
             {
                 if($scope.shoes['items'][j]['_id'] == productPromise['_id'])
@@ -2749,7 +2748,7 @@ angular.module('kalzate.controllers', [])
 
             $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
                 for(var j=0;j<$scope.shoes['items'].length;j++)
                 {
@@ -2815,9 +2814,9 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/ticket/'+type,{'_id':$scope.ticketId, 'overview':overview, 'products':products})
-        .success(function (response) 
+        .success(function (response)
         {
-            
+
             $scope.tickets['codes'].push(ticketCode);
 
             //Abrir Caja
@@ -2831,15 +2830,15 @@ angular.module('kalzate.controllers', [])
                     {
                         console.log('printer not detected!');
                     }
-                    
-                });          
+
+                });
 
                 //Vamos a nuevo ticket
                 return $scope.newTicket();
             }
 
             var modalInstance = $modal.open({
-  
+
               templateUrl: 'ModalPrintTicket.html',
               controller: 'ModalPrintTicketCtrl',
               backdrop: 'static',
@@ -2877,7 +2876,7 @@ angular.module('kalzate.controllers', [])
             });
 
             $scope.processingTicket = false;
-            
+
         })
         .error(function (err)
         {
@@ -2907,7 +2906,7 @@ angular.module('kalzate.controllers', [])
         totalItems      : 0,
         maxSize         : 5,
         itemsPerPage    : 4,
-        setPage         : function (page) 
+        setPage         : function (page)
         {
             //$location.path('/shoes/page/'+page);
             $scope.shoes['pagination']['currentPage'] = page;
@@ -2921,7 +2920,7 @@ angular.module('kalzate.controllers', [])
         {
             $http
             .post('/api/shoes',{search: $scope.shoes['searching'], order: $scope.shoes['order'], offset:offset, limit:limit})
-            .success(function (shoes) 
+            .success(function (shoes)
             {
                 //console.log(shoes);
                 $scope.shoes['pagination']['totalItems'] = shoes.count;
@@ -2934,11 +2933,11 @@ angular.module('kalzate.controllers', [])
         search: function()
         {
 
-            if( $scope.shoes.barcode == '' && 
-                $scope.shoes.reference == '' && 
-                $scope.shoes.brand == '' && 
+            if( $scope.shoes.barcode == '' &&
+                $scope.shoes.reference == '' &&
+                $scope.shoes.brand == '' &&
                 $scope.shoes.size == '' &&
-                $scope.shoes.category == '' && 
+                $scope.shoes.category == '' &&
                 $scope.shoes.color == '')
             {
                 $scope.shoes['items'] = [];
@@ -2987,7 +2986,7 @@ angular.module('kalzate.controllers', [])
                 }
 
                 $scope.shoes['pagination']['setPage'](1);
-            }  
+            }
         }
     };
 
@@ -3039,7 +3038,7 @@ angular.module('kalzate.controllers', [])
         totalItems      : 0,
         maxSize         : 5,
         itemsPerPage    : 4,
-        setPage         : function (page) 
+        setPage         : function (page)
         {
             //$location.path('/shoes/page/'+page);
             $scope.tickets['pagination']['currentPage'] = page;
@@ -3053,7 +3052,7 @@ angular.module('kalzate.controllers', [])
         {
             $http
             .post('/api/tickets/get',{search: $scope.tickets['searching'], order: $scope.tickets['order'], offset:offset, limit:limit})
-            .success(function (tickets) 
+            .success(function (tickets)
             {
                 $scope.tickets['items'] = tickets.items;
                 $scope.tickets['pagination']['totalItems'] = tickets.count;
@@ -3071,8 +3070,8 @@ angular.module('kalzate.controllers', [])
         search: function()
         {
 
-            if( $scope.tickets.code == '' && 
-                $scope.tickets.employee == '' && 
+            if( $scope.tickets.code == '' &&
+                $scope.tickets.employee == '' &&
                 $scope.tickets.date == '' &&
                 $scope.tickets.state == '')
             {
@@ -3105,7 +3104,7 @@ angular.module('kalzate.controllers', [])
                 }
 
                 $scope.tickets['pagination']['setPage'](1);
-            }  
+            }
         }
     };
 
@@ -3121,13 +3120,13 @@ angular.module('kalzate.controllers', [])
     }
 
     $scope.tickets['setToday']= function (date, mode) {
-        
+
         $scope.tickets['date'] = (new Date()).toLocaleDateString();
         $scope.tickets['pagination']['search']();
     };
 
     $scope.tickets['parseDate']= function (date) {
-        
+
         return (new Date(date)).toLocaleDateString();
         /*date = date.substr(0,10).split('-');
         return date[2]+'/'+date[1]+'/'+date[0];*/
@@ -3135,7 +3134,7 @@ angular.module('kalzate.controllers', [])
 
     var abortedInfo;
     $scope.tickets['abortTicket']= function (code, i) {
-        
+
         if(i)
         {
             $scope.tickets['items'][i]['disabled'] = true;
@@ -3147,19 +3146,19 @@ angular.module('kalzate.controllers', [])
         {
             $http
             .post('/api/ticket/abort', abortedInfo)
-            .success(function (response) 
+            .success(function (response)
             {
-                
+
                 if(response.error)
                 {
                     abortedInfo['loop_index'] = response.error;
                     abortedInfo['updated'] = response.updated || false;
-                    
+
                     if(i)
                     {
-                       $scope.tickets['items'][i]['disabled'] = false; 
+                       $scope.tickets['items'][i]['disabled'] = false;
                     }
-                    
+
                     $scope.ticketNotice = {visible:true,code:1};
                     return;
                 }
@@ -3179,7 +3178,7 @@ angular.module('kalzate.controllers', [])
                         {
                             $state.go('tickets');
                         }
-                        
+
                     });
                 }
 
@@ -3194,7 +3193,7 @@ angular.module('kalzate.controllers', [])
 
                 if(i)
                 {
-                   $scope.tickets['items'][i]['disabled'] = false; 
+                   $scope.tickets['items'][i]['disabled'] = false;
                 }
 
                 $scope.ticketNotice = {visible:true,code:1};
@@ -3204,23 +3203,23 @@ angular.module('kalzate.controllers', [])
         {
             $http
             .post('/api/ticket/get/sessionTicket', {'code':code})
-            .success(function (info) 
+            .success(function (info)
             {
-                
+
                 abortedInfo = {
 
-                    'loop_index':0, 
-                    'products':info.ticket.products, 
-                    '_id':info.sessTicket['_id'], 
+                    'loop_index':0,
+                    'products':info.ticket.products,
+                    '_id':info.sessTicket['_id'],
                     'overview':info.ticket.overview,
                     'updated':false
                 };
 
                 $http
                 .post('/api/ticket/abort', abortedInfo)
-                .success(function (response) 
+                .success(function (response)
                 {
-                    
+
                     if(response.error)
                     {
                         abortedInfo['loop_index'] = response.error;
@@ -3228,9 +3227,9 @@ angular.module('kalzate.controllers', [])
 
                         if(i)
                         {
-                           $scope.tickets['items'][i]['disabled'] = false; 
+                           $scope.tickets['items'][i]['disabled'] = false;
                         }
-                        
+
                         $scope.ticketNotice = {visible:true,code:1};
                         return;
                     }
@@ -3250,7 +3249,7 @@ angular.module('kalzate.controllers', [])
                             {
                                 $state.go('tickets');
                             }
-                            
+
                         });
                     }
 
@@ -3264,7 +3263,7 @@ angular.module('kalzate.controllers', [])
 
                     if(i)
                     {
-                       $scope.tickets['items'][i]['disabled'] = false; 
+                       $scope.tickets['items'][i]['disabled'] = false;
                     }
 
                     $scope.ticketNotice = {visible:true,code:1};
@@ -3275,17 +3274,17 @@ angular.module('kalzate.controllers', [])
 
                 if(i)
                 {
-                   $scope.tickets['items'][i]['disabled'] = false; 
+                   $scope.tickets['items'][i]['disabled'] = false;
                 }
 
                 $scope.ticketNotice = {visible:true,code:1};
             });
         }
-        
+
     };
 
     $scope.tickets['reprintTicket']= function (index) {
-        
+
         //Send to print: $scope.tickets.items[i]['print'];
         Printer.print({cut:true, content:$scope.tickets.items[index]['print'], openCashDrawer:false}, function (err){
 
@@ -3298,7 +3297,7 @@ angular.module('kalzate.controllers', [])
                 console.log('printer detected: '+Printer.getName());
             }
 
-        }); 
+        });
     };
 
     /*DELETE THIS BLOCK IF CHANGING EDIT USER TO A NEW STATE*/
@@ -3385,7 +3384,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/box/get',info)
-        .success(function (data) 
+        .success(function (data)
         {
             $scope.box.progress = false;
 
@@ -3418,7 +3417,7 @@ angular.module('kalzate.controllers', [])
         $scope.box.total -= $scope.box.total_stack;
         $scope.box.total_stack = $scope.box.initialCash;
         $scope.box.total += $scope.box.initialCash;
-        
+
     };
 
     $scope.box['printToPDF'] = function()
@@ -3456,7 +3455,7 @@ angular.module('kalzate.controllers', [])
         ticket += 'Total Efectivo: '+$scope.box.result[len]['total_cash']+' Euros | Total T. Cred.: '+$scope.box.result[len]['total_credit']+" Euros\r\n";
         ticket += 'Total: '+$scope.box.result[len]['total']+' Euros | Total + Deposito Inicial: '+($scope.box.result[len]['total']+$scope.box.initialCash)+" Euros\r\n";
         ticket += 'Caja: '+($scope.box.result[len]['total_cash']+$scope.box.result[len]['total_rcash'])+' Euros | Caja FINAL: '+($scope.box.result[len]['total_cash']+$scope.box.result[len]['total_rcash']+$scope.box.initialCash)+" Euros\r\n\r\n";
-        
+
         ticket += "------------------------------------------\r\n\r\n";
         ticket += "-   -   -   -   -   -   -   -   -   -   -\r\n\r\n\r\n";
 
@@ -3470,7 +3469,7 @@ angular.module('kalzate.controllers', [])
             {
                 console.log('printer detected',err);
             }
-            
+
         });
 
     };
@@ -3523,9 +3522,9 @@ angular.module('kalzate.controllers', [])
         {
             $http
             .post('/api/ticket/voucher/validate', {'code':$scope.payment_method.voucher_code})
-            .success(function (voucher) 
+            .success(function (voucher)
             {
-                
+
                 if(voucher)
                 {
                     //go ahead
@@ -3565,7 +3564,7 @@ angular.module('kalzate.controllers', [])
         var total = ($scope.payment_method.combined_cash || 0) + ($scope.payment_method.combined_credit || 0) + ($scope.payment_method.combined_voucher || 0);
 
         $scope.ticketReceived = total.toString();
-        
+
         $scope.computeExchange();
 
         $scope.payment_method.combined_needed = ($scope.ticketTotal - total).toFixed(2);
@@ -3595,11 +3594,11 @@ angular.module('kalzate.controllers', [])
     $scope.$on('$viewContentLoaded', function() {
 
     });
-    */ 
+    */
 
 }])
 .controller('ModalPrintTicketCtrl', ['$scope', '$modalInstance', 'ticket', 'Printer', function ($scope, $modalInstance, ticket, Printer) {
-    
+
     $scope.ticket = ticket;
 
     $scope.print = function()
@@ -3641,22 +3640,22 @@ angular.module('kalzate.controllers', [])
 
 }])
 .controller('TicketsReturnCtrl', ['$scope','$stateParams', '$http', '$state', function ($scope, $stateParams, $http, $state) {
-    
+
     var oldDate, _discount;
     $scope.code = $stateParams.code;
 
     if(!$scope.code)
     {
         return $state.go('error');
-    } 
+    }
 
     $scope.newTicket(function(){
 
         $http
         .post('/api/ticket/getByCode', {'code':$scope.code})
-        .success(function (ticket) 
+        .success(function (ticket)
         {
-            
+
             // $scope.returnTicketTotal = Math.abs(ticket.overview.total).toFixed(2);
             $scope.returnTicketTotal = ticket.overview.total;
             $scope.returnTicketTax = ticket.overview.tax;
@@ -3696,7 +3695,7 @@ angular.module('kalzate.controllers', [])
         }
         else
         {
-            
+
             discount = quantity*$scope.returnProducts[i]['_discount'];
         }
 
@@ -3748,7 +3747,7 @@ angular.module('kalzate.controllers', [])
 
         $http
         .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-        .success(function (response) 
+        .success(function (response)
         {
             $scope.$parent.oldTicketInfo.total += subtotal;
             $scope.$parent.applyRate();
@@ -3765,7 +3764,7 @@ angular.module('kalzate.controllers', [])
         {
             $scope.ticketNotice = {visible:true,code:3};
         });
-        
+
     }
 
     $scope.decReturnQty = function(i)
@@ -3794,7 +3793,7 @@ angular.module('kalzate.controllers', [])
 
             return $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
                 $scope.returnProducts[i]['quantity']--;
                 // $scope.$parent.oldTicketInfo.total += -($scope.returnProducts[i]['price']*$scope.returnProducts[i]['quantity']);
@@ -3840,7 +3839,7 @@ angular.module('kalzate.controllers', [])
 
             return $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
                 // $scope.$parent.oldTicketInfo.total += ($scope.returnProducts[i]['price']*$scope.returnProducts[i]['quantity']);
                 $scope.$parent.oldTicketInfo.total += calculateSub(i);
@@ -3894,7 +3893,7 @@ angular.module('kalzate.controllers', [])
 
             return $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
                 $scope.returnProducts[i]['quantity']++;
                 // $scope.$parent.oldTicketInfo.total += -($scope.returnProducts[i]['price']*$scope.returnProducts[i]['quantity']);
@@ -3942,7 +3941,7 @@ angular.module('kalzate.controllers', [])
 
             return $http
             .post('/api/ticket/update',{'_id':$scope.ticketId, 'product':productPromise})
-            .success(function (response) 
+            .success(function (response)
             {
                 // $scope.$parent.oldTicketInfo.total += ($scope.returnProducts[i]['price']*$scope.returnProducts[i]['quantity']);
                 $scope.$parent.oldTicketInfo.total += calculateSub(i);
@@ -3984,7 +3983,7 @@ angular.module('kalzate.controllers', [])
             {
                 $state.go('tickets');
             }
-            
+
         });
     }
 
@@ -4043,7 +4042,7 @@ angular.module('kalzate.controllers', [])
         else
         {
             var copy = {};
-            
+
             for(var k=0; k<products['new'].length; k++)
             {
                 angular.extend(copy,products['new'][k]);
@@ -4081,25 +4080,25 @@ angular.module('kalzate.controllers', [])
 
         products['productsFinal'] = productsFinal;
 
-        return $scope.finishTicket('return',true, products); 
+        return $scope.finishTicket('return',true, products);
     }
 
 
 }])
 .controller('TicketsReserveCtrl', ['$scope','$stateParams', '$http', '$state', function ($scope, $stateParams, $http, $state) {
-    
+
     $scope.code = $stateParams.code;
 
     if(!$scope.code)
     {
         return $state.go('error');
-    } 
+    }
 
     $scope.newTicket(function(){
 
         $http
         .post('/api/ticket/getByCode', {'code':$scope.code})
-        .success(function (ticket) 
+        .success(function (ticket)
         {
             $scope.savedTicketTotal = ticket.overview.total;
             $scope.savedTicketTax = ticket.overview.tax;
@@ -4128,7 +4127,7 @@ angular.module('kalzate.controllers', [])
             {
                 $state.go('tickets');
             }
-            
+
         });
     }
 
@@ -4142,14 +4141,14 @@ angular.module('kalzate.controllers', [])
     $scope.saveTicket = function()
     {
         var products = [];
-        
+
         for(var k=0;k<$scope.savedProducts.length;k++)
         {
             products.push($scope.savedProducts[k]);
         }
 
         if($scope['products'].length)
-        {  
+        {
             var product_found = false;
 
             for(var i=0;i<$scope['products'].length;i++)
@@ -4183,7 +4182,7 @@ angular.module('kalzate.controllers', [])
 }])
 /*
 .controller('BoxCtrl', ['$scope', '$http', '$state', function ($scope, $http, $state) {
-    
+
 
     $scope.progress = false;
     $scope.results = false;
@@ -4207,7 +4206,7 @@ angular.module('kalzate.filters', []).
 
 angular.module('kalzate.directives', [])
 .directive('accessLevel', ['Auth', function(Auth) {
-    
+
     return {
         restrict: 'A',
         link: function ($scope, element, attrs) {
@@ -4226,24 +4225,24 @@ angular.module('kalzate.directives', [])
             accessLevel = Auth.accessLevels[attrs.accessLevel];
             /*
             attrs.$observe('accessLevel', function(al) {
-                
+
                 if(al) accessLevel = Auth.accessLevels[al];//$scope.$eval(al);
                 updateCSS();
             });
             */
             function updateCSS() {
-                if(userRole && accessLevel) 
+                if(userRole && accessLevel)
                 {
                     if(!Auth.authorize(accessLevel, userRole))
                     {
                       element.css('display', 'none');
-                    } 
+                    }
                     else
                     {
                       //console.log('changing to block', prevDisp);
                       element.css('display', (prevDisp == 'none' ? 'block' : prevDisp));
                     }
-                        
+
                 }
             }
         }
@@ -4254,7 +4253,7 @@ angular.module('kalzate.directives', [])
         restrict: 'A',
         link: function(scope, element, attrs) {
             var nestedA = element.find('a')[0];
-            
+
 			      if(!nestedA) return;
 
             var path = attrs.navSection;
@@ -4277,7 +4276,7 @@ angular.module('kalzate.directives', [])
         restrict: 'A',
         require: ['kzSubmit', '?form'],
         controller: ['$scope', function ($scope) {
-            
+
             this.attempted = false;
 
             this.setAttempted = function() {
@@ -4294,32 +4293,32 @@ angular.module('kalzate.directives', [])
                 if (!formController) return false;
 
                 if (fieldModelController) {
-                    return fieldModelController.$invalid && 
+                    return fieldModelController.$invalid &&
                            (fieldModelController.$dirty || this.attempted);
                 } else {
-                    return formController && formController.$invalid && 
+                    return formController && formController.$invalid &&
                           (formController.$dirty || this.attempted);
                 }
             };
         }],
         compile: function (cElement, cAttributes, transclude) {
             return {
-                pre: function(scope, formElement, attributes, controllers) 
+                pre: function(scope, formElement, attributes, controllers)
                 {
                     var submitController = controllers[0];
 
-                    var formController = (controllers.length > 1) ? 
+                    var formController = (controllers.length > 1) ?
                                          controllers[1] : null;
                     submitController.setFormController(formController);
 
                     scope.kz = scope.kz || {};
                     scope.kz[attributes.name] = submitController;
                 },
-                post: function(scope, formElement, attributes, controllers) 
+                post: function(scope, formElement, attributes, controllers)
                 {
 
                     var submitController = controllers[0];
-                    var formController = (controllers.length > 1) ? 
+                    var formController = (controllers.length > 1) ?
                                          controllers[1] : null;
 
                     var fn = $parse(attributes.kzSubmit);
@@ -4329,7 +4328,7 @@ angular.module('kalzate.directives', [])
                         if (!scope.$$phase) scope.$apply();
 
                         if (!formController.$valid) return false;
-                        
+
                         if(scope.safeApply)
                         {
                             scope.safeApply(function() {
@@ -4346,7 +4345,7 @@ angular.module('kalzate.directives', [])
                 }
             };
         }
-    }   
+    }
 }])
 .directive('fileDropzone', ['$compile', function($compile) {
     return {
@@ -4363,7 +4362,7 @@ angular.module('kalzate.directives', [])
       //template: '<label class="{{uploadFileTextClass}}">{{uploadFileText}}</label><input type="file" style="display:none;"/>',
       //scope: true,
       link: function (scope, element, attrs) {
-        
+
         var checkSize, isTypeValid, processDragOverOrEnter, validMimeTypes, processFile
             ,template = element.html();
 
@@ -4371,7 +4370,7 @@ angular.module('kalzate.directives', [])
         {
           var fileId = 'filedropzone'+Math.random().toString(16);
 
-          if(attrs.uploadFileWrapperClass) 
+          if(attrs.uploadFileWrapperClass)
           {
             var wrapper = attrs.uploadFileWrapperClass.split('.');
             template = '<'+wrapper[0]+' class="'+wrapper[1]+'"><label class="{{uploadFileTextClass}}" for="'+fileId+'">{{uploadFileText}}</label><input id="'+fileId+'" type="file" style="display:none;"/></'+wrapper[0]+'>' + template;
@@ -4379,7 +4378,7 @@ angular.module('kalzate.directives', [])
             template = angular.element(template);
 
             element.children().remove();
-        
+
             element.append(template);
 
             var fileLabel = angular.element(angular.element(element.children()[0]).children()[0])
@@ -4393,7 +4392,7 @@ angular.module('kalzate.directives', [])
             template = angular.element(template);
 
             element.children().remove();
-        
+
             element.append(template);
 
             var fileLabel = angular.element(element.children()[0])
@@ -4407,7 +4406,7 @@ angular.module('kalzate.directives', [])
               fileInput.remove();
 
               fileId = 'filedropzone'+Math.random().toString(16);
-              
+
               fileInput = angular.element(document.createElement("input"));
               fileInput.attr('type', 'file');
               fileInput.attr('id', fileId);
@@ -4432,26 +4431,26 @@ angular.module('kalzate.directives', [])
           template = angular.element(template);
 
           element.children().remove();
-        
+
           element.append(template);
-          
+
         }
 
-        if(!attrs.uploadFileText) 
+        if(!attrs.uploadFileText)
         {
             attrs.uploadFileText = 'ARRASTRA TUS FICHEROS AQUÍ';
         }
 
-        if(!attrs.uploadFileTextClass) 
+        if(!attrs.uploadFileTextClass)
         {
             attrs.uploadFileTextClass = 'dropzone-label';
         }
 
         $compile(template)(scope);
 
-        processDragOverOrEnter = function (event) 
-        {         
-          if (event) 
+        processDragOverOrEnter = function (event)
+        {
+          if (event)
           {
             event.preventDefault();
           }
@@ -4462,18 +4461,18 @@ angular.module('kalzate.directives', [])
 
         validMimeTypes = attrs.fileDropzone;
 
-        checkSize = function (size) 
+        checkSize = function (size)
         {
           var _ref;
 
-          if (((_ref = attrs.maxFileSize) === (void 0) || _ref === '') || (size / 1024) / 1024 < attrs.maxFileSize) 
+          if (((_ref = attrs.maxFileSize) === (void 0) || _ref === '') || (size / 1024) / 1024 < attrs.maxFileSize)
           {
             return true;
-          } 
-          else 
+          }
+          else
           {
-            
-            scope.$apply(function () 
+
+            scope.$apply(function ()
             {
                 //scope.fileError = 'size';
                 //scope.fileError = 1;
@@ -4488,7 +4487,7 @@ angular.module('kalzate.directives', [])
 
         };
 
-        isTypeValid = function(type) 
+        isTypeValid = function(type)
         {
 
           //Temporal solution for those cases when the browser set no mime type on file
@@ -4497,17 +4496,17 @@ angular.module('kalzate.directives', [])
             return true;
           }
 
-          if(((validMimeTypes === (void 0) || validMimeTypes === '') 
-            || !type 
+          if(((validMimeTypes === (void 0) || validMimeTypes === '')
+            || !type
             || validMimeTypes.indexOf(type) > -1)
-            && type.replace(/\ /g,'') != '') 
+            && type.replace(/\ /g,'') != '')
           {
             return true;
-          } 
-          else 
+          }
+          else
           {
-            
-            scope.$apply(function () 
+
+            scope.$apply(function ()
             {
                 //scope.fileError = 'mime';
                 scope.fileLoading = false;
@@ -4526,7 +4525,7 @@ angular.module('kalzate.directives', [])
 
             var file, name, reader, size, type;
 
-            if (event) 
+            if (event)
             {
                 event.preventDefault();
             }
@@ -4538,10 +4537,10 @@ angular.module('kalzate.directives', [])
 
             reader = new FileReader();
 
-            reader.onload = function(evt) 
+            reader.onload = function(evt)
             {
-              
-              if (checkSize(size) && isTypeValid(type)) 
+
+              if (checkSize(size) && isTypeValid(type))
               {
 
                 var file = {};
@@ -4556,7 +4555,7 @@ angular.module('kalzate.directives', [])
                   resetFileInput();
                 }
 
-                return scope.$apply(function () 
+                return scope.$apply(function ()
                 {
                   //scope.fileError = false;
                   scope.fileError['visible']= false;
@@ -4601,39 +4600,39 @@ angular.module('kalzate.directives', [])
         element.bind('dragenter', processDragOverOrEnter);
 
         element.bind('drop', function (event) {
-          
+
             processFile(event,false);
         });
       }
     };
 }])
 .directive('jsonTable', [function() {
-    
+
     return {
 
       restrict: 'A',
       replace: true,
-      scope: 
+      scope:
       {
           jsonTable: '@' ,
           jsonTableData: '=',
           jsonTableLoaded: '=',
           jsonTableActive: '='
       },
-      link:  function(scope, elem, attrs) 
+      link:  function(scope, elem, attrs)
       {
 
-        var json2table = function (json) 
+        var json2table = function (json)
         {
 
-            var createTR = function (id) 
+            var createTR = function (id)
             {
                var tr = document.createElement("tr");
                tr.ID = id;
                return tr;
             },
 
-            createTH = function (html) 
+            createTH = function (html)
             {
                var th = document.createElement("th");
                th.className = "text-center";
@@ -4641,7 +4640,7 @@ angular.module('kalzate.directives', [])
                return th;
             },
 
-            createTD = function (html) 
+            createTD = function (html)
             {
                var td = document.createElement("td");
                //var input = document.createElement('input');
@@ -4662,7 +4661,7 @@ angular.module('kalzate.directives', [])
             headerCount = new Object()
             ;
 
-            if (json.length > 0) 
+            if (json.length > 0)
             {
 
               var index = 0,
@@ -4675,26 +4674,26 @@ angular.module('kalzate.directives', [])
 
               head.appendChild(createTH('Nº'));
 
-              for (var item in json[0]) 
+              for (var item in json[0])
               {
-                 if (!headerCount.hasOwnProperty(item)) 
+                 if (!headerCount.hasOwnProperty(item))
                  {
                      head.appendChild(createTH(item));
                      headerCount[item] = index;
                      index++;
                  }
               }
-                   
+
               pTableHead.appendChild(head);
               pTable.appendChild(pTableHead);
 
-              for (var i = 0; i < json.length; i++) 
+              for (var i = 0; i < json.length; i++)
               {
                 var row = new createTR(i);
 
                 row.appendChild(createTD(i+1));
 
-                for (j in json[i]) 
+                for (j in json[i])
                 {
                     row.appendChild(createTD(json[i][j]));
                 }
@@ -4704,12 +4703,12 @@ angular.module('kalzate.directives', [])
 
               pTable.appendChild(pTableBody);
             }
-           
+
            return pTable;
         }
 
         scope.$watch('jsonTable', function(value) {
-          
+
           if(scope.jsonTableActive)
           {
             console.log('renderinf Table');scope.jsonTableLoaded = true;
@@ -4720,22 +4719,22 @@ angular.module('kalzate.directives', [])
         });
 
         scope.$watch('jsonTableActive', function(value) {
-          
+
             if(value)
             {
               console.log('renderinf Active');scope.jsonTableLoaded = true;
               elem.append(json2table(scope.jsonTableData[parseInt(scope.jsonTable)]['data']));
               scope.jsonTableLoaded = false;
             }
-            
+
 
         });
 
         /*scope.$watch('asyncHtml', function(value) {
-          
+
           //console.log(value);
           scope.asyncLoaded = true;
-        
+
           var temp = document.createElement('div'),
               frag = document.createDocumentFragment();
 
@@ -4749,8 +4748,8 @@ angular.module('kalzate.directives', [])
             {
                 frag.appendChild(temp.firstChild);
                 setTimeout(arguments.callee, 0);
-            } 
-            else 
+            }
+            else
             {
                 scope.$apply(function(){
 
@@ -4764,21 +4763,21 @@ angular.module('kalzate.directives', [])
           })();
 
         });*/
-        
+
       }
 
     };
 }])
 .directive('imgLoad', [function() {
-    
+
     return {
-      scope: 
+      scope:
       {
           imgLoad: '=' ,
           imgLoadError: '&imgLoadError',
           imgLoadSuccess: '&imgLoadSuccess'
       },
-      link:  function(scope, elem, attrs) 
+      link:  function(scope, elem, attrs)
       {
 
           var index = 0;

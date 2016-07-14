@@ -9,7 +9,7 @@
         "express": "3.x",
         "passport": "*",
         "passport-local": "*",
-        "mongoose":"4.4.10",
+        "mongoose":"3.6.11",
         "json2csv":"*",
         "pdfkit":"*",
         "qrcode":"*",
