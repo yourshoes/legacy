@@ -37,7 +37,7 @@ app.configure(function(){
     app.use(app.router);
 
     //DataBase
-    mongoose.connect('mongodb://localhost/kalzate?poolSize=10');
+    mongoose.connect('mongodb://localhost/kalzate2?poolSize=10');
     mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 });
 
@@ -58,6 +58,7 @@ var store_actions   = require('./api/store');
 var sales_actions   = require('./api/sales');
 var util_actions    = require('./api/util');
 
+app.post('/api/print', user_actions.print);
 app.post('/api/login', user_actions.login);
 app.post('/api/logout', user_actions.logout);
 app.post('/api/register', user_actions.createUser);

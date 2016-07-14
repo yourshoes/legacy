@@ -9,6 +9,7 @@ var passport        = require('passport');
 var fs              = require('fs');
 var nodemailer      = require('nodemailer');
 var roles           = require('../../client/app/js/config').userRoles;
+var printer 		= require('electron-printer');
 
 require('../auth/conf');
 
@@ -42,6 +43,40 @@ exports.index = function (req, res)
     });
 
     //on production, index.html must be set directly
+};
+
+
+exports.print = function (req, res) {
+    
+    function toBytes(str) {
+        var arr = []
+        for (var i=0; i < str.length; i++) {
+            arr.push(str[i].charCodeAt(0))
+        }
+        return arr;
+    }
+
+    //qz.appendHex("x1Bx40");
+    var print = req.body.data;
+
+    //var printData = print.content;
+    var printData = toBytes(print.content).concat([0x1B, 0x69, 0x1B, 0x70, 0x00, 0x09, 0x09]);
+
+    printer.printDirect({
+        data: new Buffer(printData)
+        //data: printData
+        , printer: 'termica'
+        , type: "RAW"
+        , success:function(){
+            res.send(200);
+        }
+        , error:function(err){
+
+            console.error(err);
+            res.send(404);
+
+        }
+    });
 };
 
 exports.login = [passport.authenticate('local'), function (req, res){

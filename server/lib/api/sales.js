@@ -371,7 +371,7 @@ exports.orderTicket = function (req, res, next)
                 break;
         }
 
-        ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 30 DIAS\r\n';
+        ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 15 DIAS\r\n';
         ticketReceipt += '\r\n       *** GRACIAS POR SU VISITA ***\r\n\r\n';
         ticketReceipt += '-   -   -   -   -   -   -   -   -   -   -\r\n\r\n\r\n';
 
@@ -924,11 +924,11 @@ exports.returnTicket = function (req, res, next)
             {
                 var today = moment(),
                     oldTicketDate = moment(data['products']['date']),
-                    days = 30 - today.diff(oldTicketDate,'days');
+                    days = 15 - today.diff(oldTicketDate,'days');
 
-                ticketReceipt += '\r\n       DEVOLUCIONES MAX. HASTA 30 DIAS\r\n';
+                ticketReceipt += '\r\n       DEVOLUCIONES MAX. HASTA 15 DIAS\r\n';
 
-                if(days <= 30)
+                if(days <= 15)
                 {
                     ticketReceipt += '\r\n      (*) DEVOLUCIONES MAX. '+days+' DIA'+(days > 1 ? 'S':'')+'\r\n';
                 }
@@ -939,7 +939,7 @@ exports.returnTicket = function (req, res, next)
             }
             else
             {
-                ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 30 DIAS\r\n';
+                ticketReceipt += '\r\n     DEVOLUCIONES MAXIMO HASTA 15 DIAS\r\n';
             }
         }
 
