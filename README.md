@@ -1,6 +1,8 @@
 Kalzate
 =======
 
+:fire: **IMPORTANT** :fire: : This repository is deprecated and not maintained anymore. Please, move to [kalzate](https://github.com/yourshoes/kalzate) instead.
+
 Point Of Sale (POS) application for a shoes store based on the MEAN stack (Node, Express, Angular and MongoDB) 
 
 # Dependences
